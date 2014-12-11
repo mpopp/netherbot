@@ -4,7 +4,12 @@
 *.jar
 *.war
 *.ear
+
+# gradle generated files #
 .gradle
 *.iml
 *.ipr
 *.iws
+
+# files with private specific content #
+connection.properties
