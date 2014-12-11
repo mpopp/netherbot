@@ -9,4 +9,5 @@ package chatbot.repositories.impl;
  */
 public class Propertyfiles {
     public static final String MESSAGE_RESPOND_REPO_FILE = "messageCommands.properties";
+    public static final String BOT_CONNECTION_PARAMETERS = "connection.properties";
 }
