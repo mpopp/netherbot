@@ -2,6 +2,7 @@ package chatbot.ircbot;
 
 import chatbot.core.ChatBotConfiguration;
 import org.pircbotx.PircBotX;
+import org.pircbotx.User;
 import org.pircbotx.exception.IrcException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,6 @@ public class BotWrapper {
 
     public void start() {
         bot = new PircBotX(configuration.getConfiguration());
-
         try {
             bot.startBot();
         } catch (IOException e) {
@@ -33,5 +33,9 @@ public class BotWrapper {
         } catch (IrcException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+    }
+
+    public PircBotX getBot(){
+        return bot;
     }
 }

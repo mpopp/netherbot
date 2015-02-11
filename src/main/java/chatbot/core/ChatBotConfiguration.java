@@ -1,6 +1,7 @@
 package chatbot.core;
 
 import chatbot.repositories.impl.Propertyfiles;
+import chatbot.services.PropertyFileService;
 import org.pircbotx.Configuration;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +26,13 @@ public class ChatBotConfiguration {
 
     private Configuration c;
 
-    @Autowired
-    public ChatBotConfiguration(Set<ListenerAdapter> commands) {
-        Properties prop = null;
-        try {
-            prop = getConfigurationProperties();
+    PropertyFileService propertyFileService;
 
+    @Autowired
+    public ChatBotConfiguration(Set<ListenerAdapter> commands, PropertyFileService propertyFileService) {
+        this.propertyFileService = propertyFileService;
+        try {
+            Properties prop = getConfigurationProperties();
         Configuration.Builder builder = new org.pircbotx.Configuration.Builder()
                 .setName(prop.getProperty("bot-name"))
                 .setServerHostname(prop.getProperty("server-host"))
@@ -51,14 +53,7 @@ public class ChatBotConfiguration {
     }
 
     private Properties getConfigurationProperties() throws IOException {
-        Properties prop = new Properties();
-        if (prop == null) {
-            prop = new Properties();
-            FileInputStream fis = new FileInputStream(Propertyfiles.BOT_CONNECTION_PARAMETERS);
-            prop.load(fis);
-            fis.close();
-        }
-        return prop;
+        return propertyFileService.loadPropertiesFile(Propertyfiles.BOT_CONNECTION_PARAMETERS);
     }
 
     public Configuration getConfiguration() {

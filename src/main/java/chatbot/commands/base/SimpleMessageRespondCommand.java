@@ -3,6 +3,7 @@ package chatbot.commands.base;
 import chatbot.core.PatternConstants;
 import chatbot.repositories.api.MessageRespondRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,10 @@ public class SimpleMessageRespondCommand extends ListenerAdapter {
     public void onMessage(MessageEvent event) throws Exception {
         if (event.getMessage().startsWith(PatternConstants.PREFIX)) {
             String message =  repository.findMessageForCommand(event.getMessage());
+            for (User user : event.getBot().getUserChannelDao().getAllUsers()) {
+                System.out.println(user.getNick());
+            }
+            ;
             if(!StringUtils.isBlank(message)){
                 event.respond(message);
             }

@@ -10,4 +10,6 @@ package chatbot.repositories.impl;
 public class Propertyfiles {
     public static final String MESSAGE_RESPOND_REPO_FILE = "messageCommands.properties";
     public static final String BOT_CONNECTION_PARAMETERS = "connection.properties";
+    public static final String BLACKLIST = "blacklist.properties";
+    public static final String RAFFLE_TICKET_BACKUP = "sessionticketsbackup.properties";
 }

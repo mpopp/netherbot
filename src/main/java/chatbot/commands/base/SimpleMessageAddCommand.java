@@ -3,7 +3,6 @@ package chatbot.commands.base;
 import chatbot.core.PatternConstants;
 import chatbot.repositories.api.MessageRespondRepository;
 import org.apache.commons.lang3.StringUtils;
-import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,7 +16,7 @@ import org.springframework.stereotype.Component;
  * SimpleMessageRespondCommand.
  */
 @Component
-public class SimpleMessageAddCommand extends AbstractConfigurableMessageCommand {
+public class SimpleMessageAddCommand extends AbstractCommand {
 
     @Autowired
     private MessageRespondRepository repository;
