@@ -11,12 +11,16 @@ import org.pircbotx.hooks.events.MessageEvent;
  * This command is the abstract base for all message commands. It provides pre and post processing for the messages
  * and some configuration possibility like defining required privileges and timeouts.
  */
-public abstract class AbstractConfigurableMessageCommand extends ListenerAdapter {
+public abstract class AbstractCommand extends ListenerAdapter {
 
 
     @Override
     public void onMessage(MessageEvent event) throws Exception {
-        if (!isCommandExecutionAllowed(event) || !isCommandUnderstood(event.getMessage())) return; //cancel execution if not allowed.
+        if (!isCommandUnderstood(event.getMessage())) return;
+        if(!isCommandExecutionAllowed(event)){
+            event.getChannel().send().message("Sorry, du darfst diesen Befehl nicht ausführen.");
+            return;
+        }
         preprocessingHook(event);
         executeCommand(event);
         postprocessingHook(event);
