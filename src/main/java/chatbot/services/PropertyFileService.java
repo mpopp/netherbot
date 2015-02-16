@@ -1,5 +1,6 @@
 package chatbot.services;
 
+import chatbot.entities.Viewer;
 import chatbot.repositories.impl.Propertyfiles;
 import org.springframework.stereotype.Component;
 
@@ -37,10 +38,12 @@ public class PropertyFileService {
         new PrintWriter(targetFile).close();
     }
 
-    public void saveAllProperties(Map<String, Long> properties, String targetFile) throws IOException {
+    //TODO That method is not generic enough to deserve being placed in a general PropertyFileService. Should be
+    // moved to viewer or raffle service.
+    public void saveAllProperties(Map<Viewer, Long> properties, String targetFile) throws IOException {
         final Properties pf = loadPropertiesFile(targetFile);
-        for(Map.Entry<String, Long> entry : properties.entrySet()) {
-            pf.setProperty(entry.getKey(), entry.getValue().toString());
+        for(Map.Entry<Viewer, Long> entry : properties.entrySet()) {
+            pf.setProperty(entry.getKey().nick, entry.getValue().toString());
         }
         FileOutputStream fos = new FileOutputStream(targetFile);
         pf.store(fos, null);

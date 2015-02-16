@@ -1,10 +1,12 @@
 package chatbot.datacollectors;
 
-import chatbot.ircbot.BotWrapper;
+import chatbot.entities.Viewer;
+import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
 import chatbot.services.PropertyFileService;
 import chatbot.services.RaffleService;
-import org.pircbotx.User;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,24 +21,38 @@ public class RaffleTicketCollector implements Runnable {
     private static final long SLEEP_INTERVAL = 2000; //60000;
 
 
-    private Map<String, Long> usertickets;
-    private final Set<String> blacklist;
+    /**
+     * Map to be used for collecting the tickets per user for the current raffle.
+     */
+    private Map<Viewer, Long> usertickets;
 
-    @Autowired
-    private BotWrapper bot;
+    /**
+     * Map to be returned by getUsers after the raffle has stopped;
+     */
+    private Map<Viewer, Long> raffleUsers;
+
+    private final Set<Viewer> blacklist;
 
     @Autowired
     private RaffleService raffleService;
+
+    @Autowired
+    private ViewerRepository viewerRepository;
 
     private Boolean run;
 
     @Autowired
     public RaffleTicketCollector(PropertyFileService propertyFileService){
-        this.usertickets = new HashMap<String, Long>();
-        this.blacklist = new HashSet<String>();
+        this.usertickets = new HashMap<Viewer, Long>();
+        this.blacklist = new HashSet<Viewer>();
         try {
             final Properties properties = propertyFileService.loadPropertiesFile(Propertyfiles.BLACKLIST);
-            blacklist.addAll(propertyFileService.loadAllPropertyKeysFromFileByValue(properties, "raffle"));
+            final Set<String> blacklistedNicks = propertyFileService.loadAllPropertyKeysFromFileByValue(properties, "raffle");
+            for(String blacklistedNick : blacklistedNicks) {
+                Viewer v = new Viewer();
+                v.nick = blacklistedNick;
+                blacklist.add(v);
+            }
         } catch (IOException e) {
             System.err.println("Something went wrong when trying to load the blacklist for raffles. Continuing with " +
                     "empty blacklist!");
@@ -46,6 +62,13 @@ public class RaffleTicketCollector implements Runnable {
     }
 
     public void stop() {
+        final Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
+        raffleUsers = Maps.filterKeys(usertickets, new Predicate<Viewer>() {
+            @Override
+            public boolean apply(Viewer input) {
+                return currentViewers.contains(input);
+            }
+        });
         run = false;
     }
 
@@ -55,25 +78,23 @@ public class RaffleTicketCollector implements Runnable {
 
     public void start() throws IOException {
         usertickets = raffleService.loadRaffle();
+        raffleUsers = null;
         run = true;
     }
 
-    public Map<String, Long> getUsers(){
-        return usertickets;
+    public Map<Viewer, Long> getUsers(){
+        return raffleUsers;
     }
-
-
 
     @Override
     public void run() {
         while (run) {
-            for (User user : bot.getBot().getUserChannelDao().getAllUsers()) {
-                String nick = user.getNick().toLowerCase();
-                if(!blacklist.contains(nick)) {
-                    Long nrOfTicketsToAdd = getNrOfTicketsToAdd(nick);
-                    raffleService.addTickets(usertickets, nick, nrOfTicketsToAdd);
+            for (Viewer viewer: viewerRepository.findCurrentViewers()) {
+                if(!blacklist.contains(viewer)) {
+                    Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
+                    raffleService.addTickets(usertickets, viewer, nrOfTicketsToAdd);
                 } else {
-                    raffleService.removeUser(usertickets, nick);
+                    raffleService.removeUser(usertickets, viewer);
                 }
             }
             raffleService.saveRaffle(usertickets);
@@ -86,7 +107,7 @@ public class RaffleTicketCollector implements Runnable {
         System.out.println("Collecting tickets has stopped");
     }
 
-    private Long getNrOfTicketsToAdd(String nick) {
+    private Long getNrOfTicketsToAdd(Viewer nick) {
         return 1L;
     }
 }
