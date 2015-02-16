@@ -1,5 +1,6 @@
 package chatbot.services;
 
+import chatbot.entities.Viewer;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -10,18 +11,18 @@ import java.util.Map;
 @Component
 public class TicketService {
 
-    public String findRandomKeyByTicketChance(Map<String, Long> ticketmap){
+    public Viewer findRandomKeyByTicketChance(Map<Viewer, Long> ticketmap){
         long totalTickets = 0L;
         for(Long tickets : ticketmap.values()){
             totalTickets += tickets;
         }
 
-        for(Map.Entry<String, Long> usertickets: ticketmap.entrySet()){
+        for(Map.Entry<Viewer, Long> usertickets: ticketmap.entrySet()){
             totalTickets -= usertickets.getValue();
             if(totalTickets <= 0){
                 return usertickets.getKey();
             }
         }
-        return "-";
+        return null;
     }
 }

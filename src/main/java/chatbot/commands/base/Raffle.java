@@ -2,6 +2,7 @@ package chatbot.commands.base;
 
 import chatbot.core.PatternConstants;
 import chatbot.datacollectors.RaffleTicketCollector;
+import chatbot.entities.Viewer;
 import chatbot.services.TicketService;
 import chatbot.services.UserRolesService;
 import org.pircbotx.Channel;
@@ -48,9 +49,9 @@ public class Raffle extends AbstractCommand {
         if(eventMessage.equals(PatternConstants.PREFIX + "stopraffle")){
             run = false;
             collector.stop();
-            String winner = ticketService.findRandomKeyByTicketChance(collector.getUsers());
+            Viewer winner = ticketService.findRandomKeyByTicketChance(collector.getUsers());
             collector.reset();
-            event.getChannel().send().message(String.format("Gewonnen hat %s", winner));
+            event.getChannel().send().message(String.format("Gewonnen hat %s", winner!= null ? winner.nick : "-"));
         } else {
             event.getChannel().send().message("Es läuft bereits ein Gewinnspiel. Stoppe das Gewinnspiel mit " +
                     "!stopraffle und ermittle damit automatisch den Gewinner. (MODS ONLY)");
@@ -76,16 +77,6 @@ public class Raffle extends AbstractCommand {
     protected boolean isCommandExecutionAllowed(MessageEvent event) {
         return userRolesService.isUserOperatorInChannel(event.getUser(), event.getChannel());
     }
-
-    /*
-    * for (User user : event.getChannel().getOps()) {
-            if(user.getNick().equals(event.getUser())){
-                return true;
-            }
-        }
-
-        return false;
-    * */
 
     @Override
     protected boolean isCommandUnderstood(String message) {
