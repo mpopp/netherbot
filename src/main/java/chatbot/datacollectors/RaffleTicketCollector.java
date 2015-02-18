@@ -42,10 +42,8 @@ public class RaffleTicketCollector implements Runnable {
 
     private Boolean run;
 
-    @Autowired
     public RaffleTicketCollector(){
         this.usertickets = new HashMap<Viewer, Long>();
-        reloadBlacklist();
         this.run = false;
     }
 
@@ -84,6 +82,7 @@ public class RaffleTicketCollector implements Runnable {
 
     public void start() throws IOException {
         usertickets = raffleService.loadRaffle();
+        reloadBlacklist();
         raffleUsers = null;
         run = true;
     }
