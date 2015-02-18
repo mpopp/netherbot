@@ -31,20 +31,26 @@ public class RaffleTicketCollector implements Runnable {
      */
     private Map<Viewer, Long> raffleUsers;
 
-    private final Set<Viewer> blacklist;
-
     @Autowired
     private RaffleService raffleService;
 
     @Autowired
     private ViewerRepository viewerRepository;
 
+    @Autowired
+    private PropertyFileService propertyFileService;
+
     private Boolean run;
 
     @Autowired
-    public RaffleTicketCollector(PropertyFileService propertyFileService){
+    public RaffleTicketCollector(){
         this.usertickets = new HashMap<Viewer, Long>();
-        this.blacklist = new HashSet<Viewer>();
+        reloadBlacklist();
+        this.run = false;
+    }
+
+    private Set<Viewer> reloadBlacklist() {
+        Set<Viewer> blacklist = new HashSet<Viewer>();
         try {
             final Properties properties = propertyFileService.loadPropertiesFile(Propertyfiles.BLACKLIST);
             final Set<String> blacklistedNicks = propertyFileService.loadAllPropertyKeysFromFileByValue(properties, "raffle");
@@ -53,12 +59,12 @@ public class RaffleTicketCollector implements Runnable {
                 v.nick = blacklistedNick;
                 blacklist.add(v);
             }
+            return blacklist;
         } catch (IOException e) {
             System.err.println("Something went wrong when trying to load the blacklist for raffles. Continuing with " +
                     "empty blacklist!");
         }
-
-        this.run = true;
+        return blacklist;
     }
 
     public void stop() {
@@ -90,7 +96,7 @@ public class RaffleTicketCollector implements Runnable {
     public void run() {
         while (run) {
             for (Viewer viewer: viewerRepository.findCurrentViewers()) {
-                if(!blacklist.contains(viewer)) {
+                if(!reloadBlacklist().contains(viewer)) {
                     Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
                     raffleService.addTickets(usertickets, viewer, nrOfTicketsToAdd);
                 } else {
