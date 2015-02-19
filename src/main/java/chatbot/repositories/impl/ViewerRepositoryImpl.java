@@ -2,6 +2,8 @@ package chatbot.repositories.impl;
 
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
+import chatbot.repositories.utils.PersistenceUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -13,6 +15,8 @@ import java.util.*;
 public class ViewerRepositoryImpl implements ViewerRepository {
 
     Map<String, Viewer> viewers;
+
+    @Autowired private PersistenceUtils persistenceUtils;
 
     public ViewerRepositoryImpl(){
         viewers = new HashMap<String,Viewer>();

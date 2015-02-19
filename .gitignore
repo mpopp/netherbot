@@ -12,5 +12,8 @@
 build
 .idea
 
+# database #
+db
+
 # files with private specific content #
 connection.properties

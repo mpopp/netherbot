@@ -1,5 +1,9 @@
 package chatbot.entities;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 /**
  * Created by matthias.popp on 11.02.2015.
  *
@@ -8,7 +12,11 @@ package chatbot.entities;
  *
  * Viewers are identified by a unique nick.
  */
+@Entity
+@Table(name="Viewers")
 public class Viewer {
+
+    @Id
     public String nick;
 
     @Override
