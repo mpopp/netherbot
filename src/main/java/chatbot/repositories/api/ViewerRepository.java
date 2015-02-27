@@ -23,12 +23,19 @@ public interface ViewerRepository {
      */
     Set<Viewer> findCurrentViewers();
 
+
     /**
      * Adds a viewer to the repository. If the Viewer is already present in the repository, that method overwrites
      * the old value.
      * @param v The viewer to add.
      */
-    void addViewer(Viewer v);
+    Viewer saveViewer(Viewer v);
+
+    /**
+     * Updates all given viewers.
+     * @param viewers viewers to update.
+     */
+    void saveViewers(Set<Viewer> viewers);
 
     /**
      * Removes a viewer identified by the nick name. This method guarantees that after its execution the viewer with
@@ -36,4 +43,18 @@ public interface ViewerRepository {
      * @param nick The nick to remove from the repository.
      */
     void removeViewerByNick(String nick);
+
+    /**
+     *
+     * @param nick The nick (PK) to search for in the db.
+     * @return true if found, false otherwise.
+     */
+    boolean isViewerExisting(String nick);
+
+    /**
+     * Update a viewers watching state meaning whether the user is currently watching the stream or not.
+     * @param nick Nickname of the user to update.
+     * @param watching watching state to be set. True means the user is watching the stream.
+     */
+    void updateWatchingState(String nick, boolean watching);
 }

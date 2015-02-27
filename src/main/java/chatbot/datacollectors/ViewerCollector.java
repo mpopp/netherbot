@@ -5,6 +5,7 @@ import chatbot.core.PatternConstants;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.services.UserRolesService;
+import chatbot.services.ViewerService;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.MessageEvent;
@@ -20,26 +21,19 @@ import org.springframework.stereotype.Component;
 public class ViewerCollector extends AbstractCommand {
 
     @Autowired
-    private ViewerRepository viewerRepository;
+    private ViewerService viewerService;
 
     @Autowired
     private UserRolesService userRoleService;
 
     @Override
     public void onJoin(JoinEvent event) throws Exception {
-        Viewer v = new Viewer();
-        v.nick = event.getUser().getNick();
-        viewerRepository.addViewer(v);
+        viewerService.setViewerToOnlineOrCreateIfNotExisting(event.getUser().getNick());
     }
 
     @Override
     public void onPart(PartEvent event) throws Exception {
-        viewerRepository.removeViewerByNick(event.getUser().getNick());
-    }
-
-    @Override
-    public void onQuit(QuitEvent event) throws Exception {
-        viewerRepository.removeViewerByNick(event.getUser().getNick());
+        viewerService.setViewerToOffline(event.getUser().getNick());
     }
 
     @Override

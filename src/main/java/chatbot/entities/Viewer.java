@@ -1,8 +1,6 @@
 package chatbot.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Created by matthias.popp on 11.02.2015.
@@ -14,10 +12,29 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="Viewers")
+@NamedQueries(
+        value = {
+                @NamedQuery(name = Viewer.FIND_CURRENT_VIEWERS, query = "SELECT v FROM Viewer v WHERE v.watching = " +
+                        "'true'"),
+                @NamedQuery(name = Viewer.DELETE_BY_NICK, query = "DELETE v FROM Viewer v WHERE v.nick = :nick"),
+                @NamedQuery(name = Viewer.UPDATE_WATCHING_STATE, query = "UPDATE Viewer SET watching = :watching " +
+                        "WHERE nick = :nick")
+        }
+)
 public class Viewer {
+
+    public static final String FIND_CURRENT_VIEWERS = "findCurrentViewers";
+    public static final String DELETE_BY_NICK = "deleteViewerByNick";
+    public static final String UPDATE_WATCHING_STATE = "updateWatchingState";
 
     @Id
     public String nick;
+
+    @Column(nullable = false)
+    public boolean watching;
+
+    @Embedded
+    public Wallet wallet;
 
     @Override
     public boolean equals(Object obj) {

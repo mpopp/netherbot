@@ -22,6 +22,10 @@ public class PersistenceUtils {
         emf = Persistence.createEntityManagerFactory("netherbot");
     }
 
+    public PersistenceUtils(String persistenceUnitName){
+        emf = Persistence.createEntityManagerFactory(persistenceUnitName);
+    }
+
     public EntityManager openEm() {
         return emf.createEntityManager();
     }
