@@ -16,7 +16,7 @@ import javax.persistence.*;
         value = {
                 @NamedQuery(name = Viewer.FIND_CURRENT_VIEWERS, query = "SELECT v FROM Viewer v WHERE v.watching = " +
                         "'true'"),
-                @NamedQuery(name = Viewer.DELETE_BY_NICK, query = "DELETE v FROM Viewer v WHERE v.nick = :nick"),
+                @NamedQuery(name = Viewer.DELETE_BY_NICK, query = "DELETE FROM Viewer v WHERE v.nick = :nick"),
                 @NamedQuery(name = Viewer.UPDATE_WATCHING_STATE, query = "UPDATE Viewer SET watching = :watching " +
                         "WHERE nick = :nick")
         }
@@ -35,6 +35,11 @@ public class Viewer {
 
     @Embedded
     public Wallet wallet;
+
+    public Viewer(){
+        wallet = new Wallet();
+        watching = false;
+    }
 
     @Override
     public boolean equals(Object obj) {

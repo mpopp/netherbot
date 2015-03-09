@@ -1,4 +1,4 @@
-package chatbot.commands.base;
+package chatbot.commands;
 
 import chatbot.core.PatternConstants;
 import chatbot.repositories.api.MessageRespondRepository;

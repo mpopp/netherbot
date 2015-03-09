@@ -10,4 +10,8 @@ public class Wallet {
     public Long totalPoints;
     public Long sessionPoints;
 
+    public Wallet(){
+        totalPoints = 0L;
+        sessionPoints = 0L;
+    }
 }

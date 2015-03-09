@@ -3,10 +3,15 @@ package chatbot.services;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.persistence.EntityManager;
+import java.util.Set;
 
 /**
  * Created by matthias.popp on 25.02.2015.
  */
+@Component
 public class ViewerService {
 
     @Autowired
@@ -29,5 +34,15 @@ public class ViewerService {
      */
     public void setViewerToOffline(String nick){
         viewerRepo.updateWatchingState(nick, false);
+    }
+
+    public void setAllViewersToOffline(EntityManager em) {
+        viewerRepo.updateWatchingStateForAllUsers(false);
+    }
+
+    public void setViewersToOnline(Set<Viewer> viewers) {
+        for(Viewer v : viewers){
+            viewerRepo.updateWatchingState(v.nick, true);
+        }
     }
 }

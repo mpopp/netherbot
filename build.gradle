@@ -28,7 +28,7 @@ dependencies {
     compile 'com.h2database:h2:1.4.185'
 
     runtime 'ch.qos.logback:logback-classic:1.0.13'
-    testCompile 'org.testng:testng:6.8.7'
+    testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.9.5'
     testCompile 'org.springframework:spring-test:3.2.4.RELEASE'
 }

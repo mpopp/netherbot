@@ -4,13 +4,13 @@ import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
 import chatbot.services.PropertyFileService;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Data collector summing up streampoints for the current session
@@ -18,13 +18,9 @@ import java.util.*;
  */
 @Component
 public class StreampointsCollector implements Runnable {
-    private static final long SLEEP_INTERVAL = 15000; //new points every 15 seconds;
+    private static final long SLEEP_INTERVAL = 2000; //new points every 15 seconds;
+    private static final int PERSISTENCE_INTERVAL = 5; //defines how often the wallet should be written to db.
 
-
-    /**
-     * Map to be used for collecting the tickets per user for the current raffle.
-     */
-    private Map<Viewer, Long> sessionpoints;
 
     private final ViewerRepository viewerRepository;
 
@@ -36,15 +32,44 @@ public class StreampointsCollector implements Runnable {
     public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService){
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
-        this.sessionpoints = new HashMap<Viewer, Long>();
         this.run = false;
+    }
+
+    public void stop() {
+        run = false;
+    }
+
+    @Override
+    public void run() {
+        int persistenceCount = 0; //persist every n iterations
+        run = true;
+        while (run) {
+            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
+            for (Viewer viewer: currentViewers) {
+                if(!reloadBlacklist().contains(viewer)) {
+                    Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
+                    viewer.wallet.sessionPoints += nrOfTicketsToAdd;
+                    viewer.wallet.totalPoints += nrOfTicketsToAdd;
+                }
+            }
+            try {
+                Thread.sleep(SLEEP_INTERVAL);
+                persistenceCount++;
+                if(persistenceCount % PERSISTENCE_INTERVAL == 0){
+                    persistenceCount = 0;
+                    viewerRepository.saveViewers(currentViewers);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private Set<Viewer> reloadBlacklist() {
         Set<Viewer> blacklist = new HashSet<Viewer>();
         try {
             final Properties properties = propertyFileService.loadPropertiesFile(Propertyfiles.BLACKLIST);
-            final Set<String> blacklistedNicks = propertyFileService.loadAllPropertyKeysFromFileByValue(properties, "raffle");
+            final Set<String> blacklistedNicks = propertyFileService.loadAllPropertyKeysFromFileByValue(properties, "points");
             for(String blacklistedNick : blacklistedNicks) {
                 Viewer v = new Viewer();
                 v.nick = blacklistedNick;
@@ -58,52 +83,7 @@ public class StreampointsCollector implements Runnable {
         return blacklist;
     }
 
-    public void stop() {
-        final Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
-        raffleUsers = Maps.filterKeys(sessionpoints, new Predicate<Viewer>() {
-            @Override
-            public boolean apply(Viewer input) {
-                return currentViewers.contains(input);
-            }
-        });
-        run = false;
-    }
-
-    public void reset() throws IOException {
-        sessionpoints = raffleService.refreshRaffle();
-    }
-
-    public void start() throws IOException {
-        sessionpoints = raffleService.loadRaffle();
-        reloadBlacklist();
-        raffleUsers = null;
-        run = true;
-    }
-
-    @Override
-    public void run() {
-        int persistenceCount = 0; //persist every n iterations
-        while (run) {
-            for (Viewer viewer: viewerRepository.findCurrentViewers()) {
-                if(!reloadBlacklist().contains(viewer)) {
-                    Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
-                    viewer.wallet.sessionPoints += nrOfTicketsToAdd;
-                    viewer.wallet.totalPoints += nrOfTicketsToAdd;
-                }
-            }
-            try {
-                Thread.sleep(SLEEP_INTERVAL);
-                if(persistenceCount % 10 == 0){
-                    persistenceCount = 0;
-
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private Long getNrOfTicketsToAdd(Viewer nick) {
+    private Long getNrOfTicketsToAdd(Viewer viewer) {
         return 1L;
     }
 }

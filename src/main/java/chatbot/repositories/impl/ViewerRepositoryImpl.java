@@ -16,7 +16,12 @@ import java.util.*;
 @Component
 public class ViewerRepositoryImpl implements ViewerRepository {
 
-    @Autowired private PersistenceUtils persistenceUtils;
+    private final PersistenceUtils persistenceUtils;
+
+    @Autowired
+    public ViewerRepositoryImpl(PersistenceUtils persistenceUtils){
+        this.persistenceUtils = persistenceUtils;
+    }
 
     @Override
     public Viewer findViewerByNick(String nick) {
@@ -43,13 +48,21 @@ public class ViewerRepositoryImpl implements ViewerRepository {
 
     @Override
     public void saveViewers(Set<Viewer> viewers) {
-
+    final EntityManager em = persistenceUtils.openEm();
+        persistenceUtils.startTransaction(em);
+        for(Viewer v : viewers){
+            em.merge(v);
+        }
+        persistenceUtils.commitTransaction(em);
+        persistenceUtils.closeEm(em);
     }
 
     @Override
     public void removeViewerByNick(String nick) {
         final EntityManager em = persistenceUtils.openEm();
+        persistenceUtils.startTransaction(em);
         em.createNamedQuery(Viewer.DELETE_BY_NICK).setParameter("nick", nick).executeUpdate();
+        persistenceUtils.commitTransaction(em);
         persistenceUtils.closeEm(em);
     }
 
@@ -64,9 +77,16 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     @Override
     public void updateWatchingState(String nick, boolean watching) {
         final EntityManager em = persistenceUtils.openEm();
+        persistenceUtils.startTransaction(em);
         em.createNamedQuery(Viewer.UPDATE_WATCHING_STATE)
                 .setParameter("watching", watching)
                 .setParameter("nick", nick).executeUpdate();
+        persistenceUtils.commitTransaction(em);
         persistenceUtils.closeEm(em);
+    }
+
+    @Override
+    public void updateWatchingStateForAllUsers(boolean watching) {
+        //TODO implement this method
     }
 }

@@ -36,8 +36,19 @@ public class PersistenceUtils {
         em.getTransaction().begin();
     }
 
+    public EntityManager startTransaction(){
+        EntityManager em = openEm();
+        em.getTransaction().begin();
+        return em;
+    }
+
     public void commitTransaction(EntityManager em){
         em.getTransaction().commit();
+    }
+
+    public void commitTransactionAndCloseEM(EntityManager em){
+        em.getTransaction().commit();
+        em.close();
     }
 
     public boolean isTransactionActive(EntityManager em){

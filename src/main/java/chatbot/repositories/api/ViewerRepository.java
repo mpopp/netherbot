@@ -57,4 +57,10 @@ public interface ViewerRepository {
      * @param watching watching state to be set. True means the user is watching the stream.
      */
     void updateWatchingState(String nick, boolean watching);
+
+    /**
+     * updates the watching state for all users.
+     * @param watching .
+     */
+    void updateWatchingStateForAllUsers(boolean watching);
 }

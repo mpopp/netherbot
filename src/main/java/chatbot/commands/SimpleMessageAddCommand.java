@@ -1,5 +1,6 @@
-package chatbot.commands.base;
+package chatbot.commands;
 
+import chatbot.commands.base.AbstractCommand;
 import chatbot.core.PatternConstants;
 import chatbot.repositories.api.MessageRespondRepository;
 import org.apache.commons.lang3.StringUtils;

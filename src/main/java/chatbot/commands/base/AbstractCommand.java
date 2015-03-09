@@ -1,7 +1,10 @@
 package chatbot.commands.base;
 
+import com.google.common.collect.Lists;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
+
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,7 +15,6 @@ import org.pircbotx.hooks.events.MessageEvent;
  * and some configuration possibility like defining required privileges and timeouts.
  */
 public abstract class AbstractCommand extends ListenerAdapter {
-
 
     @Override
     public void onMessage(MessageEvent event) throws Exception {
@@ -63,4 +65,12 @@ public abstract class AbstractCommand extends ListenerAdapter {
      * @return <code>true</code> if the command was understood, otherwise <code>false</code>.
      */
     protected abstract boolean isCommandUnderstood(String message);
+
+    /**
+     * Get the list of commands that this command implementations adds to the bot.
+     * @return A list of all commands that are understood and processed by the command implementation;
+     */
+    public List<String> getCommands() {
+        return Lists.newArrayList();
+    }
 }

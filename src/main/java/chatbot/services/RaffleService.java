@@ -1,15 +1,14 @@
 package chatbot.services;
 
 import chatbot.entities.Viewer;
+import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
+import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by matthias.popp on 05.02.2015.
@@ -18,11 +17,31 @@ import java.util.Properties;
 public class RaffleService {
 
     private final PropertyFileService propertyFileService;
+    private final ViewerRepository viewerRepository;
+    private final TicketService ticketService;
+
 
     @Autowired
-    public RaffleService(PropertyFileService propertyFileService){
+    public RaffleService(PropertyFileService propertyFileService, ViewerRepository viewerRepository, TicketService ticketService){
 
         this.propertyFileService = propertyFileService;
+        this.viewerRepository = viewerRepository;
+        this.ticketService = ticketService;
+    }
+
+    public Set<Viewer> findRaffleParticipants(Set<Viewer> previousWinners){
+        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers();
+        Set<Viewer> raffleParticipantsBackup = Sets.newHashSet(raffleParticipants);
+        raffleParticipants.removeAll(previousWinners);
+        if(raffleParticipants.isEmpty()){
+            raffleParticipants.addAll(raffleParticipantsBackup);
+        }
+        return raffleParticipants;
+    }
+
+
+    public Viewer findWinner(Set<Viewer> raffleParticipants) {
+        return ticketService.findRandomKeyByTicketChance(raffleParticipants);
     }
 
     public void addTickets(Map<Viewer, Long> usertickets, Viewer viewer, Long nrOfTicketsToAdd) {
@@ -65,4 +84,5 @@ public class RaffleService {
                     " bot dies or is shut down you lose the raffle data of the current session.");
         }
     }
+
 }

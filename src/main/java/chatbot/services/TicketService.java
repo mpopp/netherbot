@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by matthias.popp on 05.02.2015.
@@ -18,17 +19,17 @@ public class TicketService {
         rand = new Random();
     }
 
-    public Viewer findRandomKeyByTicketChance(Map<Viewer, Long> ticketmap){
+    public Viewer findRandomKeyByTicketChance(Set<Viewer> viewers){
         long totalTickets = 0L;
-        for(Long tickets : ticketmap.values()){
-            totalTickets += tickets;
+        for(Viewer viewer : viewers){
+            totalTickets += viewer.wallet.sessionPoints;
         }
         long randomTickets = nextRandomLongInInterval(0, totalTickets);
 
-        for(Map.Entry<Viewer, Long> usertickets: ticketmap.entrySet()){
-            randomTickets -= usertickets.getValue();
+        for(Viewer viewer: viewers){
+            randomTickets -= viewer.wallet.sessionPoints;
             if(randomTickets <= 0){
-                return usertickets.getKey();
+                return viewer;
             }
         }
         return null;
