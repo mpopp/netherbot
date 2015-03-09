@@ -59,9 +59,10 @@ public interface ViewerRepository {
 
     /**
      * updates the watching state for all users.
+     * @param em
      * @param watching .
      */
-    void updateWatchingStateForAllUsers(boolean watching);
+    void updateWatchingStateForAllUsers(EntityManager em, boolean watching);
 
     /**
      * Update a viewers watching state meaning whether the user is currently watching the stream or not.

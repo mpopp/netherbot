@@ -5,10 +5,12 @@ import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.ViewerRepositoryImpl;
 import chatbot.repositories.utils.PersistenceUtils;
 import com.google.common.collect.Sets;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.persistence.EntityManager;
 import java.util.Set;
 
 /**
@@ -17,14 +19,22 @@ import java.util.Set;
 public class ViewerRepositoryTest {
 
     PersistenceUtils persistenceUtils;
-
+    EntityManager em;
     ViewerRepository target;
 
     @Before
     public void setupClass(){
         persistenceUtils = new PersistenceUtils("netherbot-test");
-        target = new ViewerRepositoryImpl(persistenceUtils);
+        em = persistenceUtils.openEm();
+        target = new ViewerRepositoryImpl();
     }
+
+    @After
+    public void tearDown(){
+        persistenceUtils.closeEm(em);
+    }
+
+
 
     @Test
     public void testSaveViewers(){
@@ -34,9 +44,10 @@ public class ViewerRepositoryTest {
         Viewer v2 = new Viewer();
         v2.nick = "v2";
         v2.watching = true;
-
-        target.saveViewers(Sets.newHashSet(v1,v2));
-        Set<Viewer> currentViewers = target.findCurrentViewers();
+        persistenceUtils.startTransaction(em);
+        target.saveViewers(em, Sets.newHashSet(v1, v2));
+        persistenceUtils.commitTransaction(em);
+        Set<Viewer> currentViewers = target.findCurrentViewers(em);
         Assert.assertEquals(2, currentViewers.size());
     }
 
@@ -45,9 +56,11 @@ public class ViewerRepositoryTest {
         Viewer v1 = new Viewer();
         v1.nick = "v1";
         v1.watching = false;
-        target.saveViewer(v1);
-        target.updateWatchingState("v1", true);
-        Set<Viewer> currentViewers = target.findCurrentViewers();
+        persistenceUtils.startTransaction(em);
+        target.saveViewer(em, v1);
+        target.updateWatchingState(em, "v1", true);
+        persistenceUtils.commitTransaction(em);
+        Set<Viewer> currentViewers = target.findCurrentViewers(em);
         Assert.assertEquals(1, currentViewers.size());
     }
 }

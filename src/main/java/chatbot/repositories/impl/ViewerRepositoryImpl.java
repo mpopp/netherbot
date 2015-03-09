@@ -2,9 +2,7 @@ package chatbot.repositories.impl;
 
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
-import chatbot.repositories.utils.PersistenceUtils;
 import com.google.common.collect.Sets;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -57,7 +55,7 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     }
 
     @Override
-    public void updateWatchingStateForAllUsers(boolean watching) {
+    public void updateWatchingStateForAllUsers(EntityManager em, boolean watching) {
         //TODO implement this method
     }
 }

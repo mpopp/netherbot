@@ -1,7 +1,6 @@
 package chatbot.orchestration;
 
 import chatbot.repositories.utils.PersistenceUtils;
-import chatbot.services.ViewerFactory;
 import chatbot.services.ViewerService;
 import org.pircbotx.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,9 @@ public class BotInitializationOrchestrationService {
     public void initializeViewers(Set<User> currentViewers) {
         EntityManager em = persistenceUtils.startTransaction();
         viewerService.setAllViewersToOffline(em);
-        viewerService.setViewersToOnline(ViewerFactory.createViewers(em, currentViewers));
+        for(User u : currentViewers) {
+            viewerService.setViewerToOnlineOrCreateIfNotExisting(em, u.getNick());
+        }
         persistenceUtils.commitTransactionAndCloseEM(em);
     }
 }

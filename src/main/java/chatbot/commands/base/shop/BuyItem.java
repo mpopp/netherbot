@@ -2,7 +2,9 @@ package chatbot.commands.base.shop;
 
 import chatbot.commands.base.AbstractCommand;
 import chatbot.core.PatternConstants;
+import chatbot.orchestration.ShoppingOrchestrationService;
 import chatbot.services.ShoppingService;
+import chatbot.services.ViewerService;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,18 +16,18 @@ import java.util.Arrays;
  */
 public class BuyItem extends AbstractCommand {
 
-    private final ShoppingService shoppingService;
+    private final ShoppingOrchestrationService shoppingOrchestrationService;
 
     @Autowired
-    public BuyItem(final ShoppingService shoppingService){
-        this.shoppingService = shoppingService;
+    public BuyItem(final ShoppingOrchestrationService shoppingOrchestrationService){
+        this.shoppingOrchestrationService = shoppingOrchestrationService;
     }
 
     @Override
     protected void executeCommand(MessageEvent event) {
         String[] messageParts = StringUtils.split(event.getMessage(), " ");
         String itemName = StringUtils.join(Arrays.copyOfRange(messageParts, 1, messageParts.length));
-        shoppingService.buyItem(itemName);
+        shoppingOrchestrationService.buyItem(event.getUser().getNick(), itemName);
 
     }
 

@@ -3,10 +3,12 @@ package chatbot.datacollectors;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
+import chatbot.repositories.utils.PersistenceUtils;
 import chatbot.services.PropertyFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Properties;
@@ -25,13 +27,15 @@ public class StreampointsCollector implements Runnable {
     private final ViewerRepository viewerRepository;
 
     private final PropertyFileService propertyFileService;
+    private final PersistenceUtils persistenceUtils;
 
     private Boolean run;
 
     @Autowired
-    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService){
+    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService, PersistenceUtils persistenceUtils){
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
+        this.persistenceUtils = persistenceUtils;
         this.run = false;
     }
 
@@ -44,7 +48,9 @@ public class StreampointsCollector implements Runnable {
         int persistenceCount = 0; //persist every n iterations
         run = true;
         while (run) {
-            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
+            //TODO move that code into an orchestration service.
+            EntityManager em = persistenceUtils.startTransaction();
+            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers(em);
             for (Viewer viewer: currentViewers) {
                 if(!reloadBlacklist().contains(viewer)) {
                     Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
@@ -52,13 +58,14 @@ public class StreampointsCollector implements Runnable {
                     viewer.wallet.totalPoints += nrOfTicketsToAdd;
                 }
             }
+            persistenceCount++;
+            if(persistenceCount % PERSISTENCE_INTERVAL == 0){
+                persistenceCount = 0;
+                viewerRepository.saveViewers(em,currentViewers);
+            }
+            persistenceUtils.commitTransactionAndCloseEM(em);
             try {
                 Thread.sleep(SLEEP_INTERVAL);
-                persistenceCount++;
-                if(persistenceCount % PERSISTENCE_INTERVAL == 0){
-                    persistenceCount = 0;
-                    viewerRepository.saveViewers(currentViewers);
-                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

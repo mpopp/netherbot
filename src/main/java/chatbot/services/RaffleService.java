@@ -3,10 +3,12 @@ package chatbot.services;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
+import chatbot.repositories.utils.PersistenceUtils;
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.util.*;
 
@@ -19,23 +21,27 @@ public class RaffleService {
     private final PropertyFileService propertyFileService;
     private final ViewerRepository viewerRepository;
     private final TicketService ticketService;
+    private final PersistenceUtils persistenceUtils;
 
 
     @Autowired
-    public RaffleService(PropertyFileService propertyFileService, ViewerRepository viewerRepository, TicketService ticketService){
+    public RaffleService(PropertyFileService propertyFileService, ViewerRepository viewerRepository, TicketService ticketService, PersistenceUtils persistenceUtils){
 
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
         this.ticketService = ticketService;
+        this.persistenceUtils = persistenceUtils;
     }
 
     public Set<Viewer> findRaffleParticipants(Set<Viewer> previousWinners){
-        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers();
+        EntityManager em = persistenceUtils.openEm();
+        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers(em);
         Set<Viewer> raffleParticipantsBackup = Sets.newHashSet(raffleParticipants);
         raffleParticipants.removeAll(previousWinners);
         if(raffleParticipants.isEmpty()){
             raffleParticipants.addAll(raffleParticipantsBackup);
         }
+        persistenceUtils.closeEm(em);
         return raffleParticipants;
     }
 

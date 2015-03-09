@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
+import javax.swing.text.html.parser.Entity;
 import java.util.Set;
 
 /**
@@ -16,17 +17,17 @@ import java.util.Set;
 public class ViewerService {
 
     private ViewerRepository viewerRepo;
-    private PersistenceUtils persistenceUtils;
 
     @Autowired
-    public ViewerService(final ViewerRepository viewerRepo, PersistenceUtils persistenceUtils){
+    public ViewerService(final ViewerRepository viewerRepo){
         this.viewerRepo = viewerRepo;
-        this.persistenceUtils = persistenceUtils;
     }
 
-    public void setViewerToOnlineOrCreateIfNotExisting(String nick){
-        EntityManager em = persistenceUtils.openEm();
-        persistenceUtils.startTransaction(em);
+    public Viewer findViewerByNick(EntityManager em, String nick){
+        return viewerRepo.findViewerByNick(em, nick);
+    }
+
+    public void setViewerToOnlineOrCreateIfNotExisting(EntityManager em, String nick){
         if(viewerRepo.isViewerExisting(em, nick)){
             viewerRepo.updateWatchingState(em, nick, true);
         } else {
@@ -35,29 +36,17 @@ public class ViewerService {
             v.watching = true;
             viewerRepo.saveViewer(em, v);
         }
-        persistenceUtils.commitTransaction(em);
-        persistenceUtils.closeEm(em);
     }
 
     /**
      * Sets the viewer to offline. At this state we assume the user was already added to the database before.
      * @param nick The nick to change the watching state for.
      */
-    public void setViewerToOffline(String nick) {
-        EntityManager em = persistenceUtils.openEm();
-        persistenceUtils.startTransaction(em);
+    public void setViewerToOffline(EntityManager em, String nick) {
         viewerRepo.updateWatchingState(em, nick, false);
-        persistenceUtils.commitTransaction(em);
-        persistenceUtils.closeEm(em);
     }
 
     public void setAllViewersToOffline(EntityManager em) {
-        viewerRepo.updateWatchingStateForAllUsers(false);
-    }
-
-    public void setViewersToOnline(Set<Viewer> viewers) {
-        for(Viewer v : viewers){
-            viewerRepo.updateWatchingState(v.nick, true);
-        }
+        viewerRepo.updateWatchingStateForAllUsers(em, false);
     }
 }

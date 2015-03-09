@@ -4,7 +4,6 @@ import chatbot.entities.Viewer;
 import com.google.common.collect.Sets;
 import org.pircbotx.User;
 
-import javax.persistence.EntityManager;
 import java.util.Set;
 
 /**
@@ -19,7 +18,7 @@ public final class ViewerFactory {
         return v;
     }
 
-    public static Set<Viewer> createViewers(EntityManager em, Set<User> users){
+    public static Set<Viewer> createViewers(Set<User> users){
         Set<Viewer> viewers = Sets.newHashSet();
         for(User u: users){
             viewers.add(createViewer(u));
