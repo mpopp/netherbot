@@ -16,73 +16,44 @@ import java.util.*;
 @Component
 public class ViewerRepositoryImpl implements ViewerRepository {
 
-    private final PersistenceUtils persistenceUtils;
-
-    @Autowired
-    public ViewerRepositoryImpl(PersistenceUtils persistenceUtils){
-        this.persistenceUtils = persistenceUtils;
+    @Override
+    public Viewer findViewerByNick(EntityManager em, String nick) {
+       return em.find(Viewer.class, nick);
     }
 
     @Override
-    public Viewer findViewerByNick(String nick) {
-       return persistenceUtils.openEm().find(Viewer.class, nick);
+    public Set<Viewer> findCurrentViewers(EntityManager em) {
+        return Sets.newHashSet(em.createNamedQuery(Viewer.FIND_CURRENT_VIEWERS).getResultList());
     }
 
     @Override
-    public Set<Viewer> findCurrentViewers() {
-        final EntityManager em = persistenceUtils.openEm();
-        Set<Viewer> currentViewers = Sets.newHashSet(em.createNamedQuery(Viewer.FIND_CURRENT_VIEWERS).getResultList());
-        persistenceUtils.closeEm(em);
-        return currentViewers;
+    public Viewer saveViewer(EntityManager em, Viewer v){
+        return em.merge(v);
     }
 
     @Override
-    public Viewer saveViewer(Viewer v){
-        final EntityManager em = persistenceUtils.openEm();
-        persistenceUtils.startTransaction(em);
-        final Viewer merged = em.merge(v);
-        persistenceUtils.commitTransaction(em);
-        persistenceUtils.closeEm(em);
-        return merged;
-    }
-
-    @Override
-    public void saveViewers(Set<Viewer> viewers) {
-    final EntityManager em = persistenceUtils.openEm();
-        persistenceUtils.startTransaction(em);
+    public void saveViewers(EntityManager em, Set<Viewer> viewers) {
         for(Viewer v : viewers){
             em.merge(v);
         }
-        persistenceUtils.commitTransaction(em);
-        persistenceUtils.closeEm(em);
     }
 
     @Override
-    public void removeViewerByNick(String nick) {
-        final EntityManager em = persistenceUtils.openEm();
-        persistenceUtils.startTransaction(em);
+    public void removeViewerByNick(EntityManager em, String nick) {
         em.createNamedQuery(Viewer.DELETE_BY_NICK).setParameter("nick", nick).executeUpdate();
-        persistenceUtils.commitTransaction(em);
-        persistenceUtils.closeEm(em);
     }
 
     @Override
-    public boolean isViewerExisting(String nick) {
-        final EntityManager em = persistenceUtils.openEm();
+    public boolean isViewerExisting(EntityManager em, String nick) {
         final Viewer v = em.find(Viewer.class, nick);
-        persistenceUtils.closeEm(em);
         return v != null;
     }
 
     @Override
-    public void updateWatchingState(String nick, boolean watching) {
-        final EntityManager em = persistenceUtils.openEm();
-        persistenceUtils.startTransaction(em);
+    public void updateWatchingState(EntityManager em, String nick, boolean watching) {
         em.createNamedQuery(Viewer.UPDATE_WATCHING_STATE)
                 .setParameter("watching", watching)
                 .setParameter("nick", nick).executeUpdate();
-        persistenceUtils.commitTransaction(em);
-        persistenceUtils.closeEm(em);
     }
 
     @Override

@@ -2,6 +2,7 @@ package chatbot.repositories.api;
 
 import chatbot.entities.Viewer;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Set;
 
@@ -15,52 +16,58 @@ public interface ViewerRepository {
      * @param nick Nick name as returned form the bot's User object.
      * @return The Viewer or null.
      */
-    Viewer findViewerByNick(String nick);
+    Viewer findViewerByNick(EntityManager em, String nick);
 
     /**
      * Returns all viewers that are currently present in the chat.
      * @return all users currently in the chat. Returns an empty list if noone is in the chat.
      */
-    Set<Viewer> findCurrentViewers();
+    Set<Viewer> findCurrentViewers(EntityManager em);
 
 
     /**
      * Adds a viewer to the repository. If the Viewer is already present in the repository, that method overwrites
      * the old value.
+     * @param em
      * @param v The viewer to add.
      */
-    Viewer saveViewer(Viewer v);
+    Viewer saveViewer(EntityManager em, Viewer v);
 
     /**
      * Updates all given viewers.
      * @param viewers viewers to update.
      */
-    void saveViewers(Set<Viewer> viewers);
+    void saveViewers(EntityManager em, Set<Viewer> viewers);
 
     /**
      * Removes a viewer identified by the nick name. This method guarantees that after its execution the viewer with
      * the specified nick is removed from the repo.
      * @param nick The nick to remove from the repository.
      */
-    void removeViewerByNick(String nick);
+    void removeViewerByNick(EntityManager em, String nick);
 
     /**
      *
+     *
+     * @param em
      * @param nick The nick (PK) to search for in the db.
      * @return true if found, false otherwise.
      */
-    boolean isViewerExisting(String nick);
+    boolean isViewerExisting(EntityManager em, String nick);
 
-    /**
-     * Update a viewers watching state meaning whether the user is currently watching the stream or not.
-     * @param nick Nickname of the user to update.
-     * @param watching watching state to be set. True means the user is watching the stream.
-     */
-    void updateWatchingState(String nick, boolean watching);
+
 
     /**
      * updates the watching state for all users.
      * @param watching .
      */
     void updateWatchingStateForAllUsers(boolean watching);
+
+    /**
+     * Update a viewers watching state meaning whether the user is currently watching the stream or not.
+     * @param em
+     * @param nick Nickname of the user to update.
+     * @param watching watching state to be set. True means the user is watching the stream.
+     */
+    void updateWatchingState(EntityManager em, String nick, boolean watching);
 }
