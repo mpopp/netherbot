@@ -20,7 +20,7 @@ public abstract class AbstractCommand extends ListenerAdapter {
     public void onMessage(MessageEvent event) throws Exception {
         if (!isCommandUnderstood(event.getMessage())) return;
         if(!isCommandExecutionAllowed(event)){
-            event.getChannel().send().message("Sorry, du darfst diesen Befehl nicht ausführen.");
+            event.respond("Sorry, du darfst diesen Befehl nicht ausführen.");
             return;
         }
         preprocessingHook(event);

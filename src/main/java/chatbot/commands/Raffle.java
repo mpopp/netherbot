@@ -37,6 +37,7 @@ public class Raffle extends AbstractCommand {
     protected void executeCommand(MessageEvent event) {
         Set<Viewer> raffleParticipants = raffleService.findRaffleParticipants(previousWinners);
         Viewer winner = raffleService.findWinner(raffleParticipants);
+        //TODO set session points for winner to 0
         previousWinners.add(winner);
     }
 
