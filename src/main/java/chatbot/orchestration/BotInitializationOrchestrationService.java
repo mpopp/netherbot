@@ -1,12 +1,13 @@
 package chatbot.orchestration;
 
-import chatbot.repositories.utils.PersistenceUtils;
+
+import chatbot.core.MongoDbConfiguration;
 import chatbot.services.ViewerService;
+import com.mongodb.client.MongoDatabase;
 import org.pircbotx.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
 import java.util.Set;
 
 /**
@@ -16,20 +17,18 @@ import java.util.Set;
 public class BotInitializationOrchestrationService {
 
     private final ViewerService viewerService;
-    private final PersistenceUtils persistenceUtils;
+    private final MongoDatabase mongoDatabase;
 
     @Autowired
-    public BotInitializationOrchestrationService(ViewerService viewerService, PersistenceUtils persistenceUtils) {
+    public BotInitializationOrchestrationService(ViewerService viewerService, MongoDbConfiguration configuration) {
         this.viewerService = viewerService;
-        this.persistenceUtils = persistenceUtils;
+        mongoDatabase = configuration.getMongoDatabase();
     }
 
     public void initializeViewers(Set<User> currentViewers) {
-        EntityManager em = persistenceUtils.startTransaction();
-        viewerService.setAllViewersToOffline(em);
-        for(User u : currentViewers) {
-            viewerService.setViewerToOnlineOrCreateIfNotExisting(em, u.getNick());
+        viewerService.setAllViewersToOffline(mongoDatabase);
+        for (User u : currentViewers) {
+            viewerService.setViewerToOnlineOrCreateIfNotExisting(mongoDatabase, u.getNick());
         }
-        persistenceUtils.commitTransactionAndCloseEM(em);
     }
 }
