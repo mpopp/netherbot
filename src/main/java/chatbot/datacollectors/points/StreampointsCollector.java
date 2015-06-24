@@ -1,4 +1,4 @@
-package chatbot.datacollectors;
+package chatbot.datacollectors.points;
 
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;

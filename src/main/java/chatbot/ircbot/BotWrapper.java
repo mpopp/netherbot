@@ -1,9 +1,8 @@
 package chatbot.ircbot;
 
 import chatbot.core.ChatBotConfiguration;
-import chatbot.datacollectors.StreampointsCollector;
+import chatbot.datacollectors.points.StreampointsCollector;
 import org.pircbotx.PircBotX;
-import org.pircbotx.User;
 import org.pircbotx.exception.IrcException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
