@@ -1,14 +1,14 @@
 package chatbot.datacollectors.points;
 
+import chatbot.core.MongoDbConfiguration;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
-import chatbot.repositories.utils.PersistenceUtils;
 import chatbot.services.PropertyFileService;
+import com.mongodb.client.MongoDatabase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Properties;
@@ -27,15 +27,17 @@ public class StreampointsCollector implements Runnable {
     private final ViewerRepository viewerRepository;
 
     private final PropertyFileService propertyFileService;
-    private final PersistenceUtils persistenceUtils;
+    private final MongoDatabase mongoDatabase;
 
     private Boolean run;
 
     @Autowired
-    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService, PersistenceUtils persistenceUtils){
+    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService, MongoDbConfiguration configuration) {
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
-        this.persistenceUtils = persistenceUtils;
+        this.mongoDatabase = configuration.getMongoDatabase();
+
+
         this.run = false;
     }
 
@@ -47,29 +49,29 @@ public class StreampointsCollector implements Runnable {
     public void run() {
         int persistenceCount = 0; //persist every n iterations
         run = true;
+
         while (run) {
             //TODO move that code into an orchestration service.
-            EntityManager em = persistenceUtils.startTransaction();
-            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers(em);
-            for (Viewer viewer: currentViewers) {
-                if(!reloadBlacklist().contains(viewer)) {
+            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers(mongoDatabase);
+            for (Viewer viewer : currentViewers) {
+                if (!reloadBlacklist().contains(viewer)) {
                     Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
                     viewer.wallet.sessionPoints += nrOfTicketsToAdd;
                     viewer.wallet.totalPoints += nrOfTicketsToAdd;
                 }
             }
             persistenceCount++;
-            if(persistenceCount % PERSISTENCE_INTERVAL == 0){
+            if (persistenceCount % PERSISTENCE_INTERVAL == 0) {
                 persistenceCount = 0;
-                viewerRepository.saveViewers(em,currentViewers);
+                viewerRepository.saveViewers(mongoDatabase, currentViewers);
             }
-            persistenceUtils.commitTransactionAndCloseEM(em);
             try {
                 Thread.sleep(SLEEP_INTERVAL);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     private Set<Viewer> reloadBlacklist() {
@@ -77,7 +79,7 @@ public class StreampointsCollector implements Runnable {
         try {
             final Properties properties = propertyFileService.loadPropertiesFile(Propertyfiles.BLACKLIST);
             final Set<String> blacklistedNicks = propertyFileService.loadAllPropertyKeysFromFileByValue(properties, "points");
-            for(String blacklistedNick : blacklistedNicks) {
+            for (String blacklistedNick : blacklistedNicks) {
                 Viewer v = new Viewer();
                 v.nick = blacklistedNick;
                 blacklist.add(v);

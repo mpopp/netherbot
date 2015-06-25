@@ -28,6 +28,7 @@ public class BotWrapper {
     private PircBotX bot;
 
     public void start() {
+        System.out.println("CONFIG" + configuration.getConfiguration());
 
         bot = new PircBotX(configuration.getConfiguration());
         try {

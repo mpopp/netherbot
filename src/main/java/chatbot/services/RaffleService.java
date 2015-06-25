@@ -1,14 +1,14 @@
 package chatbot.services;
 
+import chatbot.core.MongoDbConfiguration;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
-import chatbot.repositories.utils.PersistenceUtils;
 import com.google.common.collect.Sets;
+import com.mongodb.client.MongoDatabase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.util.*;
 
@@ -21,27 +21,26 @@ public class RaffleService {
     private final PropertyFileService propertyFileService;
     private final ViewerRepository viewerRepository;
     private final TicketService ticketService;
-    private final PersistenceUtils persistenceUtils;
+    private final MongoDatabase mongoDatabase;
 
 
     @Autowired
-    public RaffleService(PropertyFileService propertyFileService, ViewerRepository viewerRepository, TicketService ticketService, PersistenceUtils persistenceUtils){
+    public RaffleService(PropertyFileService propertyFileService, ViewerRepository viewerRepository, TicketService ticketService, MongoDbConfiguration configuration) {
 
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
         this.ticketService = ticketService;
-        this.persistenceUtils = persistenceUtils;
+        mongoDatabase = configuration.getMongoDatabase();
     }
 
-    public Set<Viewer> findRaffleParticipants(Set<Viewer> previousWinners){
-        EntityManager em = persistenceUtils.openEm();
-        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers(em);
+    public Set<Viewer> findRaffleParticipants(Set<Viewer> previousWinners) {
+
+        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers(mongoDatabase);
         Set<Viewer> raffleParticipantsBackup = Sets.newHashSet(raffleParticipants);
         raffleParticipants.removeAll(previousWinners);
-        if(raffleParticipants.isEmpty()){
+        if (raffleParticipants.isEmpty()) {
             raffleParticipants.addAll(raffleParticipantsBackup);
         }
-        persistenceUtils.closeEm(em);
         return raffleParticipants;
     }
 
@@ -72,7 +71,7 @@ public class RaffleService {
         Map<Viewer, Long> raffle = new HashMap<Viewer, Long>();
         final Properties properties = propertyFileService.loadPropertiesFile(Propertyfiles.RAFFLE_TICKET_BACKUP);
         final Enumeration<Object> keys = properties.keys();
-        while(keys.hasMoreElements()){
+        while (keys.hasMoreElements()) {
             String key = (String) keys.nextElement();
             Long tickets = Long.parseLong((String) properties.get(key));
             Viewer v = new Viewer();

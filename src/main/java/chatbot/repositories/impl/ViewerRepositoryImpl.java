@@ -3,6 +3,12 @@ package chatbot.repositories.impl;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import com.google.common.collect.Sets;
+import com.mongodb.ReflectionDBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -14,48 +20,69 @@ import java.util.*;
 @Component
 public class ViewerRepositoryImpl implements ViewerRepository {
 
-    @Override
-    public Viewer findViewerByNick(EntityManager em, String nick) {
-       return em.find(Viewer.class, nick);
+
+    private MongoCollection<Viewer> _getViewerCollection(MongoDatabase md) {
+        return md.getCollection(Viewer.COLLECTION_NAME, Viewer.class);
     }
 
     @Override
-    public Set<Viewer> findCurrentViewers(EntityManager em) {
-        return Sets.newHashSet(em.createNamedQuery(Viewer.FIND_CURRENT_VIEWERS).getResultList());
-    }
-
-    @Override
-    public Viewer saveViewer(EntityManager em, Viewer v){
-        return em.merge(v);
-    }
-
-    @Override
-    public void saveViewers(EntityManager em, Set<Viewer> viewers) {
-        for(Viewer v : viewers){
-            em.merge(v);
+    public Viewer findViewerByNick(MongoDatabase md, String nick) {
+        List<Viewer> viewers = _getViewerCollection(md)
+                .find(Filters.eq("nick", nick))
+                .limit(1)
+                .into(new ArrayList<Viewer>());
+        if (viewers.size() == 1) {
+            return viewers.get(0);
+        } else {
+            return null;
         }
     }
 
     @Override
-    public void removeViewerByNick(EntityManager em, String nick) {
-        em.createNamedQuery(Viewer.DELETE_BY_NICK).setParameter("nick", nick).executeUpdate();
+    public Set<Viewer> findCurrentViewers(MongoDatabase md) {
+        //"SELECT v FROM Viewer v WHERE v.watching = " +"'true'"),
+        return _getViewerCollection(md).find(Filters.eq("watching", "true")).into(new HashSet<Viewer>());
     }
 
     @Override
-    public boolean isViewerExisting(EntityManager em, String nick) {
-        final Viewer v = em.find(Viewer.class, nick);
+    public Viewer saveViewer(MongoDatabase md, Viewer v) {
+        if (isViewerExisting(md, v.nick)) {
+            return _getViewerCollection(md).findOneAndReplace(Filters.eq("nick", v.nick), v);
+        } else {
+            _getViewerCollection(md).insertOne(v);
+            return findViewerByNick(md, v.nick);
+        }
+    }
+
+    @Override
+    public void saveViewers(MongoDatabase md, Set<Viewer> viewers) {
+        for (Viewer v : viewers) {
+            saveViewer(md, v);
+        }
+    }
+
+    @Override
+    public void removeViewerByNick(MongoDatabase md, String nick) {
+        //DELETE FROM Viewer v WHERE v.nick = :nick"
+        _getViewerCollection(md).deleteOne(Filters.eq("nick", nick));
+    }
+
+    @Override
+    public boolean isViewerExisting(MongoDatabase md, String nick) {
+        final Viewer v = findViewerByNick(md, nick);
         return v != null;
     }
 
     @Override
-    public void updateWatchingState(EntityManager em, String nick, boolean watching) {
-        em.createNamedQuery(Viewer.UPDATE_WATCHING_STATE)
-                .setParameter("watching", watching)
-                .setParameter("nick", nick).executeUpdate();
+    public void updateWatchingState(MongoDatabase md, String nick, boolean watching) {
+        //UPDATE Viewer SET watching = :watching " "WHERE nick = :nick"
+        Viewer viewerByNick = findViewerByNick(md, nick);
+        viewerByNick.watching = watching;
+        saveViewer(md, viewerByNick);
     }
 
     @Override
-    public void updateWatchingStateForAllUsers(EntityManager em, boolean watching) {
+    public void updateWatchingStateForAllUsers(MongoDatabase md, boolean watching) {
         //TODO implement this method
     }
 }

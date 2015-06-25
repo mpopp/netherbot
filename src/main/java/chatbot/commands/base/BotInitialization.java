@@ -1,10 +1,6 @@
 package chatbot.commands.base;
 
-import chatbot.entities.Viewer;
 import chatbot.orchestration.BotInitializationOrchestrationService;
-import chatbot.repositories.utils.PersistenceUtils;
-import chatbot.services.ViewerFactory;
-import chatbot.services.ViewerService;
 import com.google.common.collect.ImmutableSortedSet;
 import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;

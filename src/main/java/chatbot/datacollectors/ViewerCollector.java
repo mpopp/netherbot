@@ -1,17 +1,14 @@
 package chatbot.datacollectors;
 
 import chatbot.commands.base.AbstractCommand;
+import chatbot.core.MongoDbConfiguration;
 import chatbot.core.PatternConstants;
-import chatbot.entities.Viewer;
-import chatbot.repositories.api.ViewerRepository;
-import chatbot.repositories.utils.PersistenceUtils;
 import chatbot.services.UserRolesService;
 import chatbot.services.ViewerService;
-import org.pircbotx.hooks.ListenerAdapter;
+import com.mongodb.client.MongoDatabase;
 import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.pircbotx.hooks.events.PartEvent;
-import org.pircbotx.hooks.events.QuitEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,27 +22,24 @@ public class ViewerCollector extends AbstractCommand {
 
     private final ViewerService viewerService;
     private final UserRolesService userRoleService;
-    private final PersistenceUtils persistenceUtils;
+    private final MongoDatabase mongoDatabase;
+
 
     @Autowired
-    public ViewerCollector (ViewerService viewerService, UserRolesService userRoleService, PersistenceUtils persistenceUtils){
+    public ViewerCollector(ViewerService viewerService, UserRolesService userRoleService, MongoDbConfiguration configuration) {
         this.viewerService = viewerService;
         this.userRoleService = userRoleService;
-        this.persistenceUtils = persistenceUtils;
+        mongoDatabase = configuration.getMongoDatabase();
     }
 
     @Override
     public void onJoin(JoinEvent event) throws Exception {
-        EntityManager em = persistenceUtils.startTransaction();
-        viewerService.setViewerToOnlineOrCreateIfNotExisting(em, event.getUser().getNick());
-        persistenceUtils.commitTransactionAndCloseEM(em);
+        viewerService.setViewerToOnlineOrCreateIfNotExisting(mongoDatabase, event.getUser().getNick());
     }
 
     @Override
     public void onPart(PartEvent event) throws Exception {
-        EntityManager em = persistenceUtils.startTransaction();
-        viewerService.setViewerToOffline(em, event.getUser().getNick());
-        persistenceUtils.commitTransactionAndCloseEM(em);
+        viewerService.setViewerToOffline(mongoDatabase, event.getUser().getNick());
     }
 
     @Override
