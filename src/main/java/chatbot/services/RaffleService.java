@@ -5,12 +5,16 @@ import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
 import com.google.common.collect.Sets;
-import com.mongodb.client.MongoDatabase;
+import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Created by matthias.popp on 05.02.2015.
@@ -21,7 +25,7 @@ public class RaffleService {
     private final PropertyFileService propertyFileService;
     private final ViewerRepository viewerRepository;
     private final TicketService ticketService;
-    private final MongoDatabase mongoDatabase;
+    private final Datastore datastore;
 
 
     @Autowired
@@ -30,12 +34,12 @@ public class RaffleService {
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
         this.ticketService = ticketService;
-        mongoDatabase = configuration.getMongoDatabase();
+        datastore = configuration.getDatastore();
     }
 
     public Set<Viewer> findRaffleParticipants(Set<Viewer> previousWinners) {
 
-        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers(mongoDatabase);
+        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers(datastore);
         Set<Viewer> raffleParticipantsBackup = Sets.newHashSet(raffleParticipants);
         raffleParticipants.removeAll(previousWinners);
         if (raffleParticipants.isEmpty()) {

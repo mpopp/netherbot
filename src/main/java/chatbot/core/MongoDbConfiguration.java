@@ -5,9 +5,8 @@ import chatbot.services.PropertyFileService;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
-import com.mongodb.client.MongoDatabase;
-import org.pircbotx.Configuration;
-import org.pircbotx.hooks.ListenerAdapter;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,9 +25,11 @@ import java.util.Set;
 @Component
 public class MongoDbConfiguration {
 
-    MongoDatabase mongoDatabase;
 
     PropertyFileService propertyFileService;
+
+    Datastore datastore;
+
 
     @Autowired
     public MongoDbConfiguration(PropertyFileService propertyFileService) {
@@ -45,10 +45,10 @@ public class MongoDbConfiguration {
             List<MongoCredential> mongoCredentials = new ArrayList<MongoCredential>();
             mongoCredentials.add(mongoCredential);
             MongoClient mongoClient = new MongoClient(serverAddress, mongoCredentials);
-            mongoDatabase = mongoClient.getDatabase(prop.getProperty("database-name"));
-
+            Morphia morphia = new Morphia();
+            datastore = morphia.createDatastore(mongoClient, prop.getProperty("database-name"));
         } catch (IOException e) {
-            mongoDatabase = null;
+            datastore = null;
         }
 
     }
@@ -68,8 +68,8 @@ public class MongoDbConfiguration {
     }
 
 
-    public MongoDatabase getMongoDatabase() {
-        return mongoDatabase;
+    public Datastore getDatastore() {
+        return datastore;
     }
 
 

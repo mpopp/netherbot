@@ -2,17 +2,12 @@ package chatbot.repositories.impl;
 
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
-import com.google.common.collect.Sets;
-import com.mongodb.ReflectionDBObject;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
-import org.bson.Document;
+import org.mongodb.morphia.Datastore;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by matthias.popp on 11.02.2015.
@@ -20,17 +15,9 @@ import java.util.*;
 @Component
 public class ViewerRepositoryImpl implements ViewerRepository {
 
-
-    private MongoCollection<Viewer> _getViewerCollection(MongoDatabase md) {
-        return md.getCollection(Viewer.COLLECTION_NAME, Viewer.class);
-    }
-
     @Override
-    public Viewer findViewerByNick(MongoDatabase md, String nick) {
-        List<Viewer> viewers = _getViewerCollection(md)
-                .find(Filters.eq("nick", nick))
-                .limit(1)
-                .into(new ArrayList<Viewer>());
+    public Viewer findViewerByNick(Datastore ds, String nick) {
+        List<Viewer> viewers = ds.find(Viewer.class, "nick", nick).limit(1).asList();
         if (viewers.size() == 1) {
             return viewers.get(0);
         } else {
@@ -39,50 +26,47 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     }
 
     @Override
-    public Set<Viewer> findCurrentViewers(MongoDatabase md) {
+    public Set<Viewer> findCurrentViewers(Datastore ds) {
         //"SELECT v FROM Viewer v WHERE v.watching = " +"'true'"),
-        return _getViewerCollection(md).find(Filters.eq("watching", "true")).into(new HashSet<Viewer>());
+        return new HashSet<Viewer>(ds.find(Viewer.class, "watching", true).limit(1).asList());
     }
 
     @Override
-    public Viewer saveViewer(MongoDatabase md, Viewer v) {
-        if (isViewerExisting(md, v.nick)) {
-            return _getViewerCollection(md).findOneAndReplace(Filters.eq("nick", v.nick), v);
-        } else {
-            _getViewerCollection(md).insertOne(v);
-            return findViewerByNick(md, v.nick);
-        }
+    public Viewer saveViewer(Datastore ds, Viewer v) {
+        ds.save(v);
+        return findViewerByNick(ds, v.nick);
+
     }
 
     @Override
-    public void saveViewers(MongoDatabase md, Set<Viewer> viewers) {
+    public void saveViewers(Datastore ds, Set<Viewer> viewers) {
         for (Viewer v : viewers) {
-            saveViewer(md, v);
+            saveViewer(ds, v);
         }
     }
 
     @Override
-    public void removeViewerByNick(MongoDatabase md, String nick) {
+    public void removeViewerByNick(Datastore ds, String nick) {
         //DELETE FROM Viewer v WHERE v.nick = :nick"
-        _getViewerCollection(md).deleteOne(Filters.eq("nick", nick));
+        ds.delete(findViewerByNick(ds, nick));
     }
 
     @Override
-    public boolean isViewerExisting(MongoDatabase md, String nick) {
-        final Viewer v = findViewerByNick(md, nick);
+    public boolean isViewerExisting(Datastore ds, String nick) {
+        final Viewer v = findViewerByNick(ds, nick);
         return v != null;
     }
 
     @Override
-    public void updateWatchingState(MongoDatabase md, String nick, boolean watching) {
+    public void updateWatchingState(Datastore ds, String nick, boolean watching) {
         //UPDATE Viewer SET watching = :watching " "WHERE nick = :nick"
-        Viewer viewerByNick = findViewerByNick(md, nick);
+        Viewer viewerByNick = findViewerByNick(ds, nick);
         viewerByNick.watching = watching;
-        saveViewer(md, viewerByNick);
+        saveViewer(ds, viewerByNick);
     }
 
     @Override
-    public void updateWatchingStateForAllUsers(MongoDatabase md, boolean watching) {
+    public void updateWatchingStateForAllUsers(Datastore ds, boolean watching) {
         //TODO implement this method
     }
 }

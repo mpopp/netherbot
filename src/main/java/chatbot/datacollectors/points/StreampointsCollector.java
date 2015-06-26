@@ -5,7 +5,7 @@ import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
 import chatbot.services.PropertyFileService;
-import com.mongodb.client.MongoDatabase;
+import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +27,8 @@ public class StreampointsCollector implements Runnable {
     private final ViewerRepository viewerRepository;
 
     private final PropertyFileService propertyFileService;
-    private final MongoDatabase mongoDatabase;
+    private final Datastore datastore;
+
 
     private Boolean run;
 
@@ -35,7 +36,7 @@ public class StreampointsCollector implements Runnable {
     public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService, MongoDbConfiguration configuration) {
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
-        this.mongoDatabase = configuration.getMongoDatabase();
+        this.datastore = configuration.getDatastore();
 
 
         this.run = false;
@@ -52,7 +53,7 @@ public class StreampointsCollector implements Runnable {
 
         while (run) {
             //TODO move that code into an orchestration service.
-            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers(mongoDatabase);
+            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers(datastore);
             for (Viewer viewer : currentViewers) {
                 if (!reloadBlacklist().contains(viewer)) {
                     Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
@@ -63,7 +64,7 @@ public class StreampointsCollector implements Runnable {
             persistenceCount++;
             if (persistenceCount % PERSISTENCE_INTERVAL == 0) {
                 persistenceCount = 0;
-                viewerRepository.saveViewers(mongoDatabase, currentViewers);
+                viewerRepository.saveViewers(datastore, currentViewers);
             }
             try {
                 Thread.sleep(SLEEP_INTERVAL);

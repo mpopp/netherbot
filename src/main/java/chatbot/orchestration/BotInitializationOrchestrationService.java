@@ -3,7 +3,7 @@ package chatbot.orchestration;
 
 import chatbot.core.MongoDbConfiguration;
 import chatbot.services.ViewerService;
-import com.mongodb.client.MongoDatabase;
+import org.mongodb.morphia.Datastore;
 import org.pircbotx.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,18 +17,18 @@ import java.util.Set;
 public class BotInitializationOrchestrationService {
 
     private final ViewerService viewerService;
-    private final MongoDatabase mongoDatabase;
+    private final Datastore datastore;
 
     @Autowired
     public BotInitializationOrchestrationService(ViewerService viewerService, MongoDbConfiguration configuration) {
         this.viewerService = viewerService;
-        mongoDatabase = configuration.getMongoDatabase();
+        datastore = configuration.getDatastore();
     }
 
     public void initializeViewers(Set<User> currentViewers) {
-        viewerService.setAllViewersToOffline(mongoDatabase);
+        viewerService.setAllViewersToOffline(datastore);
         for (User u : currentViewers) {
-            viewerService.setViewerToOnlineOrCreateIfNotExisting(mongoDatabase, u.getNick());
+            viewerService.setViewerToOnlineOrCreateIfNotExisting(datastore, u.getNick());
         }
     }
 }

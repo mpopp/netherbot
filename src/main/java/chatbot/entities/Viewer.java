@@ -1,8 +1,11 @@
 package chatbot.entities;
 
 import com.mongodb.ReflectionDBObject;
+import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
 
-import javax.persistence.*;
+
 
 /**
  * Created by matthias.popp on 11.02.2015.
@@ -13,6 +16,7 @@ import javax.persistence.*;
  * Viewers are identified by a unique nick.
  */
 
+@Entity("viewer")
 public class Viewer extends ReflectionDBObject {
     public static final String COLLECTION_NAME = "viewer";
     public static final String FIND_CURRENT_VIEWERS = "findCurrentViewers";
@@ -22,7 +26,6 @@ public class Viewer extends ReflectionDBObject {
     @Id
     public String nick;
 
-    @Column(nullable = false)
     public boolean watching;
 
     @Embedded

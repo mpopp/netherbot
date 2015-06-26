@@ -2,7 +2,7 @@ package chatbot.services;
 
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
-import com.mongodb.client.MongoDatabase;
+import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,18 +19,18 @@ public class ViewerService {
         this.viewerRepo = viewerRepo;
     }
 
-    public Viewer findViewerByNick(MongoDatabase md, String nick){
-        return viewerRepo.findViewerByNick(md, nick);
+    public Viewer findViewerByNick(Datastore ds, String nick){
+        return viewerRepo.findViewerByNick(ds, nick);
     }
 
-    public void setViewerToOnlineOrCreateIfNotExisting(MongoDatabase md, String nick){
-        if(viewerRepo.isViewerExisting(md, nick)){
-            viewerRepo.updateWatchingState(md, nick, true);
+    public void setViewerToOnlineOrCreateIfNotExisting(Datastore ds, String nick){
+        if(viewerRepo.isViewerExisting(ds, nick)){
+            viewerRepo.updateWatchingState(ds, nick, true);
         } else {
             Viewer v = new Viewer();
             v.nick = nick;
             v.watching = true;
-            viewerRepo.saveViewer(md, v);
+            viewerRepo.saveViewer(ds, v);
         }
     }
 
@@ -38,11 +38,11 @@ public class ViewerService {
      * Sets the viewer to offline. At this state we assume the user was already added to the database before.
      * @param nick The nick to change the watching state for.
      */
-    public void setViewerToOffline(MongoDatabase md, String nick) {
-        viewerRepo.updateWatchingState(md, nick, false);
+    public void setViewerToOffline(Datastore ds, String nick) {
+        viewerRepo.updateWatchingState(ds, nick, false);
     }
 
-    public void setAllViewersToOffline(MongoDatabase md) {
-        viewerRepo.updateWatchingStateForAllUsers(md, false);
+    public void setAllViewersToOffline(Datastore ds) {
+        viewerRepo.updateWatchingStateForAllUsers(ds, false);
     }
 }
