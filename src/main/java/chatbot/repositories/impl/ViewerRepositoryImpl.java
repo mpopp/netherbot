@@ -1,8 +1,10 @@
 package chatbot.repositories.impl;
 
+import chatbot.core.MongoDbConfiguration;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import org.mongodb.morphia.Datastore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -15,9 +17,12 @@ import java.util.Set;
 @Component
 public class ViewerRepositoryImpl implements ViewerRepository {
 
+    @Autowired
+    private MongoDbConfiguration dbConfiguration;
+
     @Override
-    public Viewer findViewerByNick(Datastore ds, String nick) {
-        List<Viewer> viewers = ds.find(Viewer.class, "nick", nick).limit(1).asList();
+    public Viewer findViewerByNick(String nick) {
+        List<Viewer> viewers = dbConfiguration.getDatastore().find(Viewer.class, "nick", nick).limit(1).asList();
         if (viewers.size() == 1) {
             return viewers.get(0);
         } else {
@@ -26,47 +31,53 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     }
 
     @Override
-    public Set<Viewer> findCurrentViewers(Datastore ds) {
+    public Set<Viewer> findCurrentViewers() {
         //"SELECT v FROM Viewer v WHERE v.watching = " +"'true'"),
-        return new HashSet<Viewer>(ds.find(Viewer.class, "watching", true).limit(1).asList());
+        return new HashSet<Viewer>(dbConfiguration.getDatastore().find(Viewer.class, "watching", true).limit(1).asList());
+    }
+
+    //TODO: REMOVE SYSOUTS AFTER PROBLEM IS FIXED
+    @Override
+    public Viewer saveViewer(Viewer v) {
+        System.out.println("### SAVE VIEWER ###");
+        System.out.println(v.nick);
+        System.out.println(v.wallet.sessionPoints + " - " + v.wallet.totalPoints);
+
+
+        dbConfiguration.getDatastore().save(v);
+        return findViewerByNick(v.nick);
+
     }
 
     @Override
-    public Viewer saveViewer(Datastore ds, Viewer v) {
-        ds.save(v);
-        return findViewerByNick(ds, v.nick);
-
-    }
-
-    @Override
-    public void saveViewers(Datastore ds, Set<Viewer> viewers) {
+    public void saveViewers(Set<Viewer> viewers) {
         for (Viewer v : viewers) {
-            saveViewer(ds, v);
+            saveViewer(v);
         }
     }
 
     @Override
-    public void removeViewerByNick(Datastore ds, String nick) {
+    public void removeViewerByNick(String nick) {
         //DELETE FROM Viewer v WHERE v.nick = :nick"
-        ds.delete(findViewerByNick(ds, nick));
+        dbConfiguration.getDatastore().delete(findViewerByNick(nick));
     }
 
     @Override
-    public boolean isViewerExisting(Datastore ds, String nick) {
-        final Viewer v = findViewerByNick(ds, nick);
+    public boolean isViewerExisting(String nick) {
+        final Viewer v = findViewerByNick(nick);
         return v != null;
     }
 
     @Override
-    public void updateWatchingState(Datastore ds, String nick, boolean watching) {
+    public void updateWatchingState(String nick, boolean watching) {
         //UPDATE Viewer SET watching = :watching " "WHERE nick = :nick"
-        Viewer viewerByNick = findViewerByNick(ds, nick);
+        Viewer viewerByNick = findViewerByNick(nick);
         viewerByNick.watching = watching;
-        saveViewer(ds, viewerByNick);
+        saveViewer(viewerByNick);
     }
 
     @Override
-    public void updateWatchingStateForAllUsers(Datastore ds, boolean watching) {
+    public void updateWatchingStateForAllUsers(boolean watching) {
         //TODO implement this method
     }
 }

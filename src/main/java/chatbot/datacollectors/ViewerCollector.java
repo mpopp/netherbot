@@ -1,11 +1,9 @@
 package chatbot.datacollectors;
 
 import chatbot.commands.base.AbstractCommand;
-import chatbot.core.MongoDbConfiguration;
 import chatbot.core.PatternConstants;
 import chatbot.services.UserRolesService;
 import chatbot.services.ViewerService;
-import org.mongodb.morphia.Datastore;
 import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.pircbotx.hooks.events.PartEvent;
@@ -20,24 +18,24 @@ public class ViewerCollector extends AbstractCommand {
 
     private final ViewerService viewerService;
     private final UserRolesService userRoleService;
-    private final Datastore datastore;
 
 
     @Autowired
-    public ViewerCollector(ViewerService viewerService, UserRolesService userRoleService, MongoDbConfiguration configuration) {
+    public ViewerCollector(ViewerService viewerService, UserRolesService userRoleService) {
         this.viewerService = viewerService;
         this.userRoleService = userRoleService;
-        datastore = configuration.getDatastore();
     }
 
+    //TODO: REMOVE SYSOUTS AFTER PROBLEM IS FIXED
     @Override
     public void onJoin(JoinEvent event) throws Exception {
-        viewerService.setViewerToOnlineOrCreateIfNotExisting(datastore, event.getUser().getNick());
+        System.out.println("#### Player joined: " + event.getUser().getNick());
+        viewerService.setViewerToOnlineOrCreateIfNotExisting(event.getUser().getNick());
     }
 
     @Override
     public void onPart(PartEvent event) throws Exception {
-        viewerService.setViewerToOffline(datastore, event.getUser().getNick());
+        viewerService.setViewerToOffline(event.getUser().getNick());
     }
 
     @Override

@@ -1,11 +1,9 @@
 package chatbot.datacollectors.points;
 
-import chatbot.core.MongoDbConfiguration;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
 import chatbot.services.PropertyFileService;
-import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,16 +25,14 @@ public class StreampointsCollector implements Runnable {
     private final ViewerRepository viewerRepository;
 
     private final PropertyFileService propertyFileService;
-    private final Datastore datastore;
 
 
     private Boolean run;
 
     @Autowired
-    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService, MongoDbConfiguration configuration) {
+    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService) {
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
-        this.datastore = configuration.getDatastore();
 
 
         this.run = false;
@@ -53,7 +49,7 @@ public class StreampointsCollector implements Runnable {
 
         while (run) {
             //TODO move that code into an orchestration service.
-            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers(datastore);
+            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
             for (Viewer viewer : currentViewers) {
                 if (!reloadBlacklist().contains(viewer)) {
                     Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
@@ -64,7 +60,7 @@ public class StreampointsCollector implements Runnable {
             persistenceCount++;
             if (persistenceCount % PERSISTENCE_INTERVAL == 0) {
                 persistenceCount = 0;
-                viewerRepository.saveViewers(datastore, currentViewers);
+                viewerRepository.saveViewers( currentViewers);
             }
             try {
                 Thread.sleep(SLEEP_INTERVAL);

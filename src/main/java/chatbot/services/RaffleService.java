@@ -1,20 +1,14 @@
 package chatbot.services;
 
-import chatbot.core.MongoDbConfiguration;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
 import com.google.common.collect.Sets;
-import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by matthias.popp on 05.02.2015.
@@ -25,21 +19,19 @@ public class RaffleService {
     private final PropertyFileService propertyFileService;
     private final ViewerRepository viewerRepository;
     private final TicketService ticketService;
-    private final Datastore datastore;
 
 
     @Autowired
-    public RaffleService(PropertyFileService propertyFileService, ViewerRepository viewerRepository, TicketService ticketService, MongoDbConfiguration configuration) {
+    public RaffleService(PropertyFileService propertyFileService, ViewerRepository viewerRepository, TicketService ticketService) {
 
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
         this.ticketService = ticketService;
-        datastore = configuration.getDatastore();
     }
 
     public Set<Viewer> findRaffleParticipants(Set<Viewer> previousWinners) {
 
-        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers(datastore);
+        Set<Viewer> raffleParticipants = viewerRepository.findCurrentViewers();
         Set<Viewer> raffleParticipantsBackup = Sets.newHashSet(raffleParticipants);
         raffleParticipants.removeAll(previousWinners);
         if (raffleParticipants.isEmpty()) {

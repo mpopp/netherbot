@@ -17,11 +17,7 @@ import org.mongodb.morphia.annotations.Id;
  */
 
 @Entity("viewer")
-public class Viewer extends ReflectionDBObject {
-    public static final String COLLECTION_NAME = "viewer";
-    public static final String FIND_CURRENT_VIEWERS = "findCurrentViewers";
-    public static final String DELETE_BY_NICK = "deleteViewerByNick";
-    public static final String UPDATE_WATCHING_STATE = "updateWatchingState";
+public class Viewer {
 
     @Id
     public String nick;

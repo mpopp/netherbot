@@ -21,9 +21,16 @@ public class BotInitialization extends ListenerAdapter {
         this.service = service;
     }
 
+
+    //TODO: REMOVE SYSOUTS AFTER PROBLEM IS FIXED
     @Override
     public void onConnect(ConnectEvent event) throws Exception {
         ImmutableSortedSet<User> currentViewers = event.getBot().getUserChannelDao().getAllUsers();
+        System.out.println("# CURRENT VIEWER CALL# amount: " + currentViewers.size());
+        for (User currentViewer : currentViewers) {
+            System.out.println("# CURRENT VIEWER #");
+            System.out.println(currentViewer.getNick());
+        }
         service.initializeViewers(currentViewers);
     }
 }

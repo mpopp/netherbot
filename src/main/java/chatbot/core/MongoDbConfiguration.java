@@ -1,5 +1,6 @@
 package chatbot.core;
 
+import chatbot.entities.Viewer;
 import chatbot.repositories.impl.Propertyfiles;
 import chatbot.services.PropertyFileService;
 import com.mongodb.MongoClient;
@@ -7,7 +8,6 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -30,10 +30,8 @@ public class MongoDbConfiguration {
 
     Datastore datastore;
 
-
-    @Autowired
-    public MongoDbConfiguration(PropertyFileService propertyFileService) {
-        this.propertyFileService = propertyFileService;
+    public MongoDbConfiguration() {
+        this.propertyFileService = new PropertyFileService();
         try {
             Properties prop = getConfigurationProperties();
 
@@ -46,22 +44,14 @@ public class MongoDbConfiguration {
             mongoCredentials.add(mongoCredential);
             MongoClient mongoClient = new MongoClient(serverAddress, mongoCredentials);
             Morphia morphia = new Morphia();
-            morphia.mapPackage("chatbot.entities");
+            morphia.map(Viewer.class);
             datastore = morphia.createDatastore(mongoClient, prop.getProperty("database-name"));
         } catch (IOException e) {
+
             datastore = null;
         }
 
-    }
 
-    private void logProperties(Properties prop) {
-        System.out.println(prop.getProperty("### CONNECTION PROPS ###"));
-        System.out.println(prop.getProperty("bot-name"));
-        System.out.println(prop.getProperty("server-host"));
-        System.out.println(prop.getProperty("server-port"));
-        System.out.println(prop.getProperty("irc-username"));
-        System.out.println(prop.getProperty("oauth-key"));
-        System.out.println(prop.getProperty("channel-to-join"));
     }
 
     private Properties getConfigurationProperties() throws IOException {

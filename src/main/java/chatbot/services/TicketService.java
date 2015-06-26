@@ -3,7 +3,6 @@ package chatbot.services;
 import chatbot.entities.Viewer;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 

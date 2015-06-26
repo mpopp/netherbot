@@ -2,7 +2,6 @@ package chatbot.services;
 
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
-import org.mongodb.morphia.Datastore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,34 +14,35 @@ public class ViewerService {
     private ViewerRepository viewerRepo;
 
     @Autowired
-    public ViewerService(final ViewerRepository viewerRepo){
+    public ViewerService(final ViewerRepository viewerRepo) {
         this.viewerRepo = viewerRepo;
     }
 
-    public Viewer findViewerByNick(Datastore ds, String nick){
-        return viewerRepo.findViewerByNick(ds, nick);
+    public Viewer findViewerByNick(String nick) {
+        return viewerRepo.findViewerByNick(nick);
     }
 
-    public void setViewerToOnlineOrCreateIfNotExisting(Datastore ds, String nick){
-        if(viewerRepo.isViewerExisting(ds, nick)){
-            viewerRepo.updateWatchingState(ds, nick, true);
+    public void setViewerToOnlineOrCreateIfNotExisting(String nick) {
+        if (viewerRepo.isViewerExisting(nick)) {
+            viewerRepo.updateWatchingState(nick, true);
         } else {
             Viewer v = new Viewer();
             v.nick = nick;
             v.watching = true;
-            viewerRepo.saveViewer(ds, v);
+            viewerRepo.saveViewer(v);
         }
     }
 
     /**
      * Sets the viewer to offline. At this state we assume the user was already added to the database before.
+     *
      * @param nick The nick to change the watching state for.
      */
-    public void setViewerToOffline(Datastore ds, String nick) {
-        viewerRepo.updateWatchingState(ds, nick, false);
+    public void setViewerToOffline(String nick) {
+        viewerRepo.updateWatchingState(nick, false);
     }
 
-    public void setAllViewersToOffline(Datastore ds) {
-        viewerRepo.updateWatchingStateForAllUsers(ds, false);
+    public void setAllViewersToOffline() {
+        viewerRepo.updateWatchingStateForAllUsers(false);
     }
 }

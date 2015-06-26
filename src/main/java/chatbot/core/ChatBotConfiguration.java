@@ -2,19 +2,12 @@ package chatbot.core;
 
 import chatbot.repositories.impl.Propertyfiles;
 import chatbot.services.PropertyFileService;
-import com.mongodb.*;
-import com.mongodb.client.MongoDatabase;
 import org.pircbotx.Configuration;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
