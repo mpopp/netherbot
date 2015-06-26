@@ -46,6 +46,7 @@ public class MongoDbConfiguration {
             mongoCredentials.add(mongoCredential);
             MongoClient mongoClient = new MongoClient(serverAddress, mongoCredentials);
             Morphia morphia = new Morphia();
+            morphia.mapPackage("chatbot.entities");
             datastore = morphia.createDatastore(mongoClient, prop.getProperty("database-name"));
         } catch (IOException e) {
             datastore = null;
