@@ -27,8 +27,6 @@ public class Viewer {
     @Embedded
     public Wallet wallet;
 
-    public int level;
-
     public Viewer(){
         wallet = new Wallet();
         watching = false;

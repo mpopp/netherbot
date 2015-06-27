@@ -1,5 +1,6 @@
 package chatbot.datacollectors.points;
 
+import chatbot.dto.PointIncrement;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import chatbot.repositories.impl.Propertyfiles;
@@ -23,6 +24,7 @@ public class StreampointsCollector implements Runnable {
 
 
     private final ViewerRepository viewerRepository;
+    private final PointIncrementStrategy pointIncrementStrategy;
 
     private final PropertyFileService propertyFileService;
 
@@ -30,11 +32,10 @@ public class StreampointsCollector implements Runnable {
     private Boolean run;
 
     @Autowired
-    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService) {
+    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService, PointIncrementStrategy pointIncrementStrategy) {
         this.propertyFileService = propertyFileService;
         this.viewerRepository = viewerRepository;
-
-
+        this.pointIncrementStrategy = pointIncrementStrategy;
         this.run = false;
     }
 
@@ -52,9 +53,9 @@ public class StreampointsCollector implements Runnable {
             Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
             for (Viewer viewer : currentViewers) {
                 if (!reloadBlacklist().contains(viewer)) {
-                    Long nrOfTicketsToAdd = getNrOfTicketsToAdd(viewer);
-                    viewer.wallet.sessionPoints += nrOfTicketsToAdd;
-                    viewer.wallet.totalPoints += nrOfTicketsToAdd;
+                    PointIncrement pointIncrement = pointIncrementStrategy.calculatePointIncrement(viewer);
+                    viewer.wallet.sessionPoints += pointIncrement.getSessionPointIncrement();
+                    viewer.wallet.totalPoints += pointIncrement.getTotalPointIncrement();
                 }
             }
             persistenceCount++;
