@@ -52,11 +52,8 @@ public class StreampointsCollector implements Runnable {
             //TODO move that code into an orchestration service.
             Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
             for (Viewer viewer : currentViewers) {
-                if (!reloadBlacklist().contains(viewer)) {
-                    PointIncrement pointIncrement = pointIncrementStrategy.calculatePointIncrement(viewer);
-                    viewer.wallet.sessionPoints += pointIncrement.getSessionPointIncrement();
-                    viewer.wallet.totalPoints += pointIncrement.getTotalPointIncrement();
-                }
+                PointIncrement pointIncrement = pointIncrementStrategy.calculatePointIncrement(viewer);
+                viewer.collectPoints(pointIncrementStrategy.calculatePointIncrement(viewer));
             }
             persistenceCount++;
             if (persistenceCount % PERSISTENCE_INTERVAL == 0) {

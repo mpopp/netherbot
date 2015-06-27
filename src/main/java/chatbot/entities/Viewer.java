@@ -1,5 +1,6 @@
 package chatbot.entities;
 
+import chatbot.dto.PointIncrement;
 import com.mongodb.ReflectionDBObject;
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
@@ -30,6 +31,11 @@ public class Viewer {
     public Viewer(){
         wallet = new Wallet();
         watching = false;
+    }
+
+    public void collectPoints(PointIncrement pointsToCollect){
+        wallet.sessionPoints += pointsToCollect.getSessionPointIncrement();
+        wallet.totalPoints += pointsToCollect.getTotalPointIncrement();
     }
 
     @Override
