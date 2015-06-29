@@ -1,5 +1,6 @@
 package chatbot.datacollectors.points;
 
+import chatbot.datacollectors.DataCollector;
 import chatbot.dto.PointIncrement;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
@@ -18,7 +19,7 @@ import java.util.Set;
  * Created by matthias.popp on 04.02.2015.
  */
 @Component
-public class StreampointsCollector implements Runnable {
+public class StreampointsCollector implements Runnable, DataCollector {
     private static final long SLEEP_INTERVAL = 2000; //new points every 15 seconds;
     private static final int PERSISTENCE_INTERVAL = 5; //defines how often the wallet should be written to db.
 
@@ -39,6 +40,13 @@ public class StreampointsCollector implements Runnable {
         this.run = false;
     }
 
+    @Override
+    public void start() {
+        run = true;
+        new Thread(this).start();
+    }
+
+    @Override
     public void stop() {
         run = false;
     }
@@ -46,8 +54,6 @@ public class StreampointsCollector implements Runnable {
     @Override
     public void run() {
         int persistenceCount = 0; //persist every n iterations
-        run = true;
-
         while (run) {
             //TODO move that code into an orchestration service.
             Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
@@ -85,9 +91,5 @@ public class StreampointsCollector implements Runnable {
                     "empty blacklist!");
         }
         return blacklist;
-    }
-
-    private Long getNrOfTicketsToAdd(Viewer viewer) {
-        return 1L;
     }
 }

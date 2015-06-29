@@ -1,5 +1,6 @@
 package chatbot;
 
+import chatbot.datacollectors.DataCollectors;
 import chatbot.ircbot.BotWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -22,7 +23,8 @@ public class IRCBot {
 
         ApplicationContext context = new AnnotationConfigApplicationContext(IRCBot.class);
         BotWrapper bot = context.getBean(BotWrapper.class);
+        DataCollectors collectors = context.getBean(DataCollectors.class);
+        collectors.start();
         bot.start();
-
     }
 }

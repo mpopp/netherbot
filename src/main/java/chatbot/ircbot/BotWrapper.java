@@ -22,9 +22,6 @@ public class BotWrapper {
     @Autowired
     private ChatBotConfiguration configuration;
 
-    @Autowired
-    private StreampointsCollector pointsCollector;
-
     private PircBotX bot;
 
     public void start() {
@@ -32,17 +29,12 @@ public class BotWrapper {
 
         bot = new PircBotX(configuration.getConfiguration());
         try {
-            startCollectors();
             bot.startBot();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (IrcException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-    }
-
-    private void startCollectors() {
-        new Thread(pointsCollector).start();
     }
 
     public PircBotX getBot(){
