@@ -1,4 +1,4 @@
-package chatbot.services;
+package chatbot.factories;
 
 import chatbot.entities.Viewer;
 import com.google.common.collect.Sets;

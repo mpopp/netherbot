@@ -1,6 +1,7 @@
 package chatbot.orchestration;
 
 
+import chatbot.entities.Viewer;
 import chatbot.services.ViewerService;
 import org.pircbotx.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,10 @@ public class BotInitializationOrchestrationService {
         this.viewerService = viewerService;
     }
 
-    public void initializeViewers(Set<User> currentViewers) {
+    public void initializeViewers(Set<Viewer> currentViewers) {
         viewerService.setAllViewersToOffline();
-        for (User u : currentViewers) {
-            viewerService.setViewerToOnlineOrCreateIfNotExisting(u.getNick());
+        for (Viewer v : currentViewers) {
+            viewerService.setViewerToOnlineOrCreateIfNotExisting(v.nick);
         }
     }
 }

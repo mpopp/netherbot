@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
  * Created by matthias.popp on 11.02.2015.
  */
 @Component
+//TODO refactor -> this is a command, not a datacollector!
 public class ViewerCollector extends AbstractCommand {
 
     private final ViewerService viewerService;
