@@ -3,6 +3,7 @@ package chatbot.core;
 import chatbot.repositories.impl.Propertyfiles;
 import chatbot.services.PropertyFileService;
 import org.pircbotx.Configuration;
+import org.pircbotx.cap.EnableCapHandler;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,7 +38,9 @@ public class ChatBotConfiguration {
                     .setWebIrcUsername(prop.getProperty("irc-username"))
                     .setServerPassword(prop.getProperty("oauth-key"))
                     .addAutoJoinChannel(prop.getProperty("channel-to-join"))
-                    .setAutoReconnect(Boolean.parseBoolean(prop.getProperty("auto-reconnect")));
+                    .setAutoReconnect(Boolean.parseBoolean(prop.getProperty("auto-reconnect")))
+                    .addCapHandler(new EnableCapHandler("membership"))//request membership CAP (JOIN, PART, MODE, NAMES), stop on fail
+                    .addCapHandler(new EnableCapHandler("commands", true));//request commands CAP (USERSTATE, GLOBALUSERSTATE, HOSTTARGET, NOTICE and CLEARCHAT), ignore fail
 
             logProperties(prop);
 
