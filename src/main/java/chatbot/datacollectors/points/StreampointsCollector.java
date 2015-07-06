@@ -1,17 +1,11 @@
 package chatbot.datacollectors.points;
 
 import chatbot.datacollectors.DataCollector;
-import chatbot.dto.PointIncrement;
 import chatbot.entities.Viewer;
-import chatbot.repositories.api.ViewerRepository;
-import chatbot.repositories.impl.Propertyfiles;
-import chatbot.services.PropertyFileService;
+import chatbot.orchestration.StreamPointsOrchestrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -23,20 +17,12 @@ public class StreampointsCollector implements Runnable, DataCollector {
     private static final long SLEEP_INTERVAL = 2000; //new points every 15 seconds;
     private static final int PERSISTENCE_INTERVAL = 5; //defines how often the wallet should be written to db.
 
-
-    private final ViewerRepository viewerRepository;
-    private final PointIncrementStrategy pointIncrementStrategy;
-
-    private final PropertyFileService propertyFileService;
-
-
+    private StreamPointsOrchestrationService streamPointsOrchestrationService;
     private Boolean run;
 
     @Autowired
-    public StreampointsCollector(ViewerRepository viewerRepository, PropertyFileService propertyFileService, PointIncrementStrategy pointIncrementStrategy) {
-        this.propertyFileService = propertyFileService;
-        this.viewerRepository = viewerRepository;
-        this.pointIncrementStrategy = pointIncrementStrategy;
+    public StreampointsCollector(StreamPointsOrchestrationService streamPointsOrchestrationService) {
+        this.streamPointsOrchestrationService = streamPointsOrchestrationService;
         this.run = false;
     }
 
@@ -55,41 +41,27 @@ public class StreampointsCollector implements Runnable, DataCollector {
     public void run() {
         int persistenceCount = 0; //persist every n iterations
         while (run) {
-            //TODO move that code into an orchestration service.
-            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
-            for (Viewer viewer : currentViewers) {
-                PointIncrement pointIncrement = pointIncrementStrategy.calculatePointIncrement(viewer);
-                viewer.collectPoints(pointIncrementStrategy.calculatePointIncrement(viewer));
-            }
+            Set<Viewer> currentViewers = streamPointsOrchestrationService.incrementPointsForCurrentViewers();
             persistenceCount++;
-            if (persistenceCount % PERSISTENCE_INTERVAL == 0) {
-                persistenceCount = 0;
-                viewerRepository.saveViewers( currentViewers);
-            }
-            try {
-                Thread.sleep(SLEEP_INTERVAL);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            persistenceCount = persistViewerPoints(persistenceCount, currentViewers);
+            sleepAWhile();
         }
 
     }
 
-    private Set<Viewer> reloadBlacklist() {
-        Set<Viewer> blacklist = new HashSet<Viewer>();
+    private void sleepAWhile() {
         try {
-            final Properties properties = propertyFileService.loadPropertiesFile(Propertyfiles.BLACKLIST);
-            final Set<String> blacklistedNicks = propertyFileService.loadAllPropertyKeysFromFileByValue(properties, "points");
-            for (String blacklistedNick : blacklistedNicks) {
-                Viewer v = new Viewer();
-                v.nick = blacklistedNick;
-                blacklist.add(v);
-            }
-            return blacklist;
-        } catch (IOException e) {
-            System.err.println("Something went wrong when trying to load the blacklist for raffles. Continuing with " +
-                    "empty blacklist!");
+            Thread.sleep(SLEEP_INTERVAL);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        return blacklist;
+    }
+
+    private int persistViewerPoints(int persistenceCount, Set<Viewer> currentViewers) {
+        if (persistenceCount % PERSISTENCE_INTERVAL == 0) {
+            persistenceCount = 0;
+            streamPointsOrchestrationService.persistPointsForViewers(currentViewers);
+        }
+        return persistenceCount;
     }
 }
