@@ -32,8 +32,8 @@ dependencies {
     compile 'com.h2database:h2:1.4.185'
     compile 'org.mongodb:mongo-java-driver:3.0.2'
     compile 'org.mongodb.morphia:morphia:1.0.0'
-
-
+    compile 'org.apache.httpcomponents:httpclient:4.5'
+    compile 'com.google.code.gson:gson:2.3.1'
 
     runtime 'ch.qos.logback:logback-classic:1.0.13'
     testCompile 'junit:junit:4.12'
