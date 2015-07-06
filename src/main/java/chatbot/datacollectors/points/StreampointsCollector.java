@@ -3,6 +3,8 @@ package chatbot.datacollectors.points;
 import chatbot.datacollectors.DataCollector;
 import chatbot.entities.Viewer;
 import chatbot.orchestration.StreamPointsOrchestrationService;
+import chatbot.repositories.api.ViewerRepository;
+import chatbot.services.LevelCurveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +21,14 @@ public class StreampointsCollector implements Runnable, DataCollector {
 
     private StreamPointsOrchestrationService streamPointsOrchestrationService;
     private Boolean run;
+    private LevelCurveService levelCurveService;
+    private final ViewerRepository viewerRepository;
 
     @Autowired
-    public StreampointsCollector(StreamPointsOrchestrationService streamPointsOrchestrationService) {
+    public StreampointsCollector(StreamPointsOrchestrationService streamPointsOrchestrationService, LevelCurveService levelCurveService, ViewerRepository viewerRepository) {
         this.streamPointsOrchestrationService = streamPointsOrchestrationService;
+        this.levelCurveService = levelCurveService;
+        this.viewerRepository = viewerRepository;
         this.run = false;
     }
 
@@ -41,7 +47,9 @@ public class StreampointsCollector implements Runnable, DataCollector {
     public void run() {
         int persistenceCount = 0; //persist every n iterations
         while (run) {
-            Set<Viewer> currentViewers = streamPointsOrchestrationService.incrementPointsForCurrentViewers();
+            Set<Viewer> currentViewers = viewerRepository.findCurrentViewers();
+            levelCurveService.adjustLevels(currentViewers);
+            streamPointsOrchestrationService.incrementPointsForCurrentViewers(currentViewers);
             persistenceCount++;
             persistenceCount = persistViewerPoints(persistenceCount, currentViewers);
             sleepAWhile();

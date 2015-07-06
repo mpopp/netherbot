@@ -3,6 +3,8 @@ package chatbot.services;
 import chatbot.entities.Viewer;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 /**
  * Created by matthias on 26.06.2015.
  */
@@ -18,5 +20,11 @@ public class LevelCurveService {
             System.out.println("Level " + level + " reached at " + levelPoints + " points. After" + (levelPoints / 2)/3600 + " seconds.");
         }
         return level;
+    }
+
+    public void adjustLevels(Set<Viewer> viewers){
+        for(Viewer v : viewers){
+            v.setLevel(calculateLevel(v));
+        }
     }
 }

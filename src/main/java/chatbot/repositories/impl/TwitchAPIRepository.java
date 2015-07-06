@@ -28,7 +28,7 @@ import java.security.cert.X509Certificate;
 @Component
 public class TwitchAPIRepository implements TwitchRepository {
     public static final String BASE_PATH = "https://api.twitch.tv/kraken";
-    private static final String CHANNEL = "{channle}";
+    private static final String CHANNEL = "{channel}";
     private final String getFollowersForChannel = BASE_PATH + "/channels/" + CHANNEL + "/follows";
 
     HttpClient client;
