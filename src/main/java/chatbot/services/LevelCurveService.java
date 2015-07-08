@@ -17,7 +17,7 @@ public class LevelCurveService {
         while(v.wallet.totalPoints > levelPoints){
             levelPoints *= 1.4;
             level++;
-            System.out.println("Level " + level + " reached at " + levelPoints + " points. After" + (levelPoints / 2)/3600 + " seconds.");
+            //System.out.println("Level " + level + " reached at " + levelPoints + " points. After" + (levelPoints / 2)/3600 + " seconds.");
         }
         return level;
     }

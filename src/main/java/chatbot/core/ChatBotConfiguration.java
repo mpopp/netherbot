@@ -38,10 +38,7 @@ public class ChatBotConfiguration {
                     .setWebIrcUsername(prop.getProperty("irc-username"))
                     .setServerPassword(prop.getProperty("oauth-key"))
                     .addAutoJoinChannel(prop.getProperty("channel-to-join"))
-                    .setAutoReconnect(Boolean.parseBoolean(prop.getProperty("auto-reconnect")))
-                    .addCapHandler(new EnableCapHandler("membership"))//request membership CAP (JOIN, PART, MODE, NAMES), stop on fail
-                    .addCapHandler(new EnableCapHandler("commands", true));//request commands CAP (USERSTATE, GLOBALUSERSTATE, HOSTTARGET, NOTICE and CLEARCHAT), ignore fail
-
+                    .setAutoReconnect(Boolean.parseBoolean(prop.getProperty("auto-reconnect")));
             logProperties(prop);
 
             for (ListenerAdapter command : commands) {

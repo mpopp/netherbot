@@ -5,6 +5,7 @@ import chatbot.dto.twitch.Followers;
 import chatbot.repositories.api.TwitchRepository;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class TwitchService {
 
     private final TwitchRepository twitchRepository;
 
+    @Autowired
     public TwitchService(TwitchRepository twitchRepository){
 
         this.twitchRepository = twitchRepository;

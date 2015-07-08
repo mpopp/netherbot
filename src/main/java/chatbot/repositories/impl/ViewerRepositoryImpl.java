@@ -4,6 +4,8 @@ import chatbot.core.MongoDbConfiguration;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
 import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.query.Query;
+import org.mongodb.morphia.query.UpdateOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +35,7 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     @Override
     public Set<Viewer> findCurrentViewers() {
         //"SELECT v FROM Viewer v WHERE v.watching = " +"'true'"),
-        return new HashSet<Viewer>(dbConfiguration.getDatastore().find(Viewer.class, "watching", true).limit(1).asList());
+        return new HashSet<Viewer>(dbConfiguration.getDatastore().find(Viewer.class, "watching", true).asList());
     }
 
     //TODO: REMOVE SYSOUTS AFTER PROBLEM IS FIXED
@@ -77,7 +79,15 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     }
 
     @Override
+    public void deleteAll() {
+        dbConfiguration.getDatastore().delete(dbConfiguration.getDatastore().find(Viewer.class));
+    }
+
+    @Override
     public void updateWatchingStateForAllUsers(boolean watching) {
-        //TODO implement this method
+        Datastore ds = dbConfiguration.getDatastore();
+        Query<Viewer> findAll = ds.find(Viewer.class, "watching", !watching);
+        UpdateOperations<Viewer> updateOperation = ds.createUpdateOperations(Viewer.class).set("watching", watching);
+        ds.update(findAll, updateOperation);
     }
 }

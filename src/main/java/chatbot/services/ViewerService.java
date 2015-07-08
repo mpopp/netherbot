@@ -1,9 +1,18 @@
 package chatbot.services;
 
+import chatbot.dto.twitch.Follower;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by matthias.popp on 25.02.2015.
@@ -20,6 +29,12 @@ public class ViewerService {
 
     public Viewer findViewerByNick(String nick) {
         return viewerRepo.findViewerByNick(nick);
+    }
+
+    public Set<Viewer> enrichViewersWithFollowerData(Set<Viewer> viewersToEnrich, List<Follower> followers){
+        Map<String, Viewer> viewerMap = transformToMap(viewersToEnrich);
+        enrichViewersWithFollowerData(followers, viewerMap);
+        return Sets.newHashSet(viewerMap.values());
     }
 
     public void setViewerToOnlineOrCreateIfNotExisting(String nick) {
@@ -45,4 +60,25 @@ public class ViewerService {
     public void setAllViewersToOffline() {
         viewerRepo.updateWatchingStateForAllUsers(false);
     }
+
+    //region HELPER METHODS
+    private void enrichViewersWithFollowerData(List<Follower> followers, Map<String, Viewer> viewerMap) {
+        for(Follower f : followers){
+            Viewer viewer = viewerMap.get(f.getUser().getName().toLowerCase());
+            if(viewer != null) {
+                viewer.setFollowing(true);
+                viewer.setNotificationsEnabled(f.isNotifications());
+            }
+        }
+    }
+
+    private Map<String, Viewer> transformToMap(Set<Viewer> viewersToEnrich) {
+        Map<String, Viewer> viewerMap = Maps.newHashMap();
+        for(Viewer v : viewersToEnrich){
+            viewerMap.put(v.nick.toLowerCase(),v);
+        }
+        return viewerMap;
+    }
+    //endregion
+
 }

@@ -3,6 +3,7 @@ package chatbot.commands.base;
 import chatbot.entities.Viewer;
 import chatbot.orchestration.BotInitializationOrchestrationService;
 import chatbot.factories.ViewerFactory;
+import chatbot.services.ViewerService;
 import com.google.common.collect.ImmutableSortedSet;
 import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
@@ -18,11 +19,11 @@ import java.util.Set;
 @Component
 public class BotInitialization extends ListenerAdapter {
 
-    private final BotInitializationOrchestrationService service;
+    private final ViewerService service;
     private final ViewerFactory viewerFactory;
 
     @Autowired
-    public BotInitialization(final BotInitializationOrchestrationService service, final ViewerFactory viewerFactory) {
+    public BotInitialization(final ViewerService service, final ViewerFactory viewerFactory) {
         this.service = service;
         this.viewerFactory = viewerFactory;
     }
@@ -30,8 +31,7 @@ public class BotInitialization extends ListenerAdapter {
 
     @Override
     public void onConnect(ConnectEvent event) throws Exception {
-        ImmutableSortedSet<User> currentViewers = event.getBot().getUserChannelDao().getAllUsers();
-        Set<Viewer> viewers = viewerFactory.createViewers(currentViewers);
-        service.initializeViewers(viewers);
+        event.getBot().sendRaw().rawLine("CAP REQ :twitch.tv/membership"); //send to receive JOIN and PART events
+        service.setAllViewersToOffline();
     }
 }
