@@ -1,10 +1,7 @@
 package chatbot.entities;
 
 import chatbot.dto.PointIncrement;
-import org.mongodb.morphia.annotations.Embedded;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Transient;
+import org.mongodb.morphia.annotations.*;
 
 
 /**
@@ -21,6 +18,9 @@ public class Viewer {
 
     @Id
     public String nick;
+
+    @Version
+    public long version;
 
     public boolean watching;
 

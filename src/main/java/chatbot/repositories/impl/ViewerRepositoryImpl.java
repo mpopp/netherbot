@@ -3,15 +3,15 @@ package chatbot.repositories.impl;
 import chatbot.core.MongoDbConfiguration;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by matthias.popp on 11.02.2015.
@@ -41,11 +41,7 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     //TODO: REMOVE SYSOUTS AFTER PROBLEM IS FIXED
     @Override
     public Viewer saveViewer(Viewer v) {
-        System.out.println("### SAVE VIEWER ###");
-        System.out.println(v.nick);
-        System.out.println(v.wallet.sessionPoints + " - " + v.wallet.totalPoints);
-
-
+        System.out.println("### SAVED VIEWER " + v.nick + " - " + v.wallet.toString() + " ###");
         dbConfiguration.getDatastore().save(v);
         return findViewerByNick(v.nick);
 
@@ -53,9 +49,8 @@ public class ViewerRepositoryImpl implements ViewerRepository {
 
     @Override
     public void saveViewers(Set<Viewer> viewers) {
-        for (Viewer v : viewers) {
-            saveViewer(v);
-        }
+        List<String> failedSaves = trySave(viewers);
+        throwOnFailures(failedSaves);
     }
 
     @Override
@@ -90,4 +85,25 @@ public class ViewerRepositoryImpl implements ViewerRepository {
         UpdateOperations<Viewer> updateOperation = ds.createUpdateOperations(Viewer.class).set("watching", watching);
         ds.update(findAll, updateOperation);
     }
+
+    //region HELPERS
+    private void throwOnFailures(List<String> failedSaves) {
+        if(!failedSaves.isEmpty()){
+            String cause = "Saving the following viewers failed because of concurrent modification: " + Joiner.on(",").join(failedSaves);
+            throw new ConcurrentModificationException(cause);
+        }
+    }
+
+    private List<String> trySave(Set<Viewer> viewers) {
+        List<String> failedSaves = Lists.newArrayList();
+        for (Viewer v : viewers) {
+            try {
+                saveViewer(v);
+            } catch (ConcurrentModificationException e){
+                failedSaves.add(v.nick);
+            }
+        }
+        return failedSaves;
+    }
+    //endregion
 }

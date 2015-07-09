@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.ConcurrentModificationException;
 import java.util.Set;
 
 /**
@@ -32,7 +33,16 @@ public class StreamPointsOrchestrationService {
         return currentViewers;
     }
 
+    /**
+     * This persist operation must not overwrite a viewer in case of concurrent modification, ever. We can live with a
+     * little inconsistency in the viewer Wallet, but it would be a tragedy if e.g. a viewers points were reset and we
+     * just overwrite it with a huge amount of points in the ConcurrentModification handling.
+     * @param viewers The viewers to save.
+     */
     public void persistPointsForViewers(Set<Viewer> viewers) {
-        viewerRepository.saveViewers(viewers);
+        try {
+            viewerRepository.saveViewers(viewers);
+        } catch(ConcurrentModificationException e){
+        }
     }
 }

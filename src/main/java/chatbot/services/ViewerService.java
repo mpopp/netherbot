@@ -9,10 +9,7 @@ import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by matthias.popp on 25.02.2015.
@@ -61,6 +58,26 @@ public class ViewerService {
         viewerRepo.updateWatchingStateForAllUsers(false);
     }
 
+    /**
+     * Saves the given viewer no matter what. Overwrites the viewer in the database in any case
+     * (even if concurrentModificationException was thrown).
+     * After 5 retries we give up though .. you probably have a serious problem in your application if you can't save
+     * a viewer after 5 tries.
+     * @param viewer The viewer to save.
+     */
+    public void forceSave(Viewer viewer) {
+        boolean success = false;
+        for(int i = 0; i <= 5 && !success; i++) {
+            try {
+                viewerRepo.saveViewer(viewer);
+                success = true;
+            } catch (ConcurrentModificationException e) {
+                Viewer v = viewerRepo.findViewerByNick(viewer.nick);
+                viewer.version = v.version;
+            }
+        }
+    }
+
     //region HELPER METHODS
     private void enrichViewersWithFollowerData(List<Follower> followers, Map<String, Viewer> viewerMap) {
         for(Follower f : followers){
@@ -79,6 +96,9 @@ public class ViewerService {
         }
         return viewerMap;
     }
+
+
+
     //endregion
 
 }

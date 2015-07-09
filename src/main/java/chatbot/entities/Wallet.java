@@ -14,4 +14,9 @@ public class Wallet {
         totalPoints = 0L;
         sessionPoints = 0L;
     }
+
+    @Override
+    public String toString() {
+        return "WALLET: T" + totalPoints + "/S" + sessionPoints;
+    }
 }
