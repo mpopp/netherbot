@@ -3,12 +3,9 @@ package chatbot.commands;
 import chatbot.commands.base.AbstractCommand;
 import chatbot.core.PatternConstants;
 import chatbot.entities.Viewer;
-import chatbot.repositories.api.ViewerRepository;
 import chatbot.services.RaffleService;
-import chatbot.services.TicketService;
 import chatbot.services.UserRolesService;
 import chatbot.services.ViewerService;
-import com.google.common.collect.Sets;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -51,6 +48,5 @@ public class Raffle extends AbstractCommand {
     protected boolean isCommandUnderstood(String message) {
         return message.equals(PatternConstants.PREFIX + "giveaway");
     }
-
 
 }

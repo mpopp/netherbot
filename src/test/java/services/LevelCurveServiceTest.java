@@ -9,7 +9,6 @@ import org.junit.Test;
  */
 public class LevelCurveServiceTest  {
 
-
     @Test
     public void testLevelCurve(){
         LevelCurveService s = new LevelCurveService();

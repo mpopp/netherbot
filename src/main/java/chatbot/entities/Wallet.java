@@ -15,6 +15,11 @@ public class Wallet {
         sessionPoints = 0L;
     }
 
+    public Wallet(long totalPoints, long sessionPoints){
+        this.totalPoints = totalPoints;
+        this.sessionPoints = sessionPoints;
+    }
+
     @Override
     public String toString() {
         return "WALLET: T" + totalPoints + "/S" + sessionPoints;

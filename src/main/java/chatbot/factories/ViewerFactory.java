@@ -26,4 +26,9 @@ public final class ViewerFactory {
         }
         return viewers;
     }
+
+    public static Viewer.ViewerBuilder build(){
+        return new Viewer.ViewerBuilder();
+    }
+
 }

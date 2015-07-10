@@ -39,6 +39,65 @@ public class Viewer {
     @Transient
     private boolean notificationsEnabled;
 
+    //region BUILDER
+    public static class ViewerBuilder {
+        private String nick;
+        private boolean watching;
+        private Wallet wallet;
+        private boolean following;
+        private boolean subscribed;
+        private long level;
+        private boolean notificationsEnabled;
+
+        public ViewerBuilder withNick(String nick) {
+            this.nick = nick;
+            return this;
+        }
+
+        public ViewerBuilder withWatching(boolean watching) {
+            this.watching = watching;
+            return this;
+        }
+
+        public ViewerBuilder withFollowing(boolean following) {
+            this.following = following;
+            return this;
+        }
+
+        public ViewerBuilder withSubscribed(boolean subscribed) {
+            this.subscribed = subscribed;
+            return this;
+        }
+
+        public ViewerBuilder withNotificationsEnabled(boolean enabled) {
+            this.notificationsEnabled = enabled;
+            return this;
+        }
+
+        public ViewerBuilder withWallet(Wallet wallet) {
+            this.wallet = wallet;
+            return this;
+        }
+
+        public ViewerBuilder withLevel(long level) {
+            this.level = level;
+            return this;
+        }
+
+        public Viewer create(){
+            Viewer v = new Viewer();
+            v.nick = nick;
+            v.notificationsEnabled = notificationsEnabled;
+            v.wallet = wallet;
+            v.setLevel(level);
+            v.following = following;
+            v.watching = watching;
+            v.subscribed = subscribed;
+            return v;
+        }
+    }
+    //endregion
+
     public Viewer() {
         wallet = new Wallet();
         watching = false;
