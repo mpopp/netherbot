@@ -79,6 +79,14 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     }
 
     @Override
+    public void resetAllSessionPoints() {
+        Datastore ds = dbConfiguration.getDatastore();
+        Query<Viewer> findAll = ds.find(Viewer.class);
+        UpdateOperations<Viewer> updateOperations = ds.createUpdateOperations(Viewer.class).set("sessionPoints", 0);
+        ds.update(findAll, updateOperations);
+    }
+
+    @Override
     public void updateWatchingStateForAllViewers(boolean watching) {
         Datastore ds = dbConfiguration.getDatastore();
         Query<Viewer> findAll = ds.find(Viewer.class, "watching", !watching);

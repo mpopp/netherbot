@@ -57,6 +57,10 @@ public class ViewerService {
         viewerRepo.updateWatchingStateForAllViewers(false);
     }
 
+    public void resetAllSessionPoints() {
+        viewerRepo.resetAllSessionPoints();
+    }
+
     /**
      * Saves the given viewer no matter what. Overwrites the viewer in the database in any case
      * (even if concurrentModificationException was thrown).

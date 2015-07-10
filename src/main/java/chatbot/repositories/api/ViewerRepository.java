@@ -70,4 +70,9 @@ public interface ViewerRepository {
      * deletes all Viewers
      */
     void deleteAll();
+
+    /**
+     * Reset session points for all viewers.
+     */
+    void resetAllSessionPoints();
 }
