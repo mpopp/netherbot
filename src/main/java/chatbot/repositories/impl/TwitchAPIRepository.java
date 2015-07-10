@@ -30,6 +30,7 @@ public class TwitchAPIRepository implements TwitchRepository {
     public static final String BASE_PATH = "https://api.twitch.tv/kraken";
     private static final String CHANNEL = "{channel}";
     private final String getFollowersForChannel = BASE_PATH + "/channels/" + CHANNEL + "/follows";
+    private final String getStream = BASE_PATH + "/streams?channel=" + CHANNEL;
 
     HttpClient client;
 
@@ -53,6 +54,11 @@ public class TwitchAPIRepository implements TwitchRepository {
     public String findFollowersForChannel(String channelName) {
         String queryString = StringUtils.replace(getFollowersForChannel, CHANNEL, channelName);
         return sendGetRequest(queryString);
+    }
+
+    @Override
+    public String findStream(String channelName) {
+        return sendGetRequest(StringUtils.replace(getStream, CHANNEL, channelName));
     }
 
 

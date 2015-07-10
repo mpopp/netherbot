@@ -79,7 +79,7 @@ public class ViewerRepositoryImpl implements ViewerRepository {
     }
 
     @Override
-    public void updateWatchingStateForAllUsers(boolean watching) {
+    public void updateWatchingStateForAllViewers(boolean watching) {
         Datastore ds = dbConfiguration.getDatastore();
         Query<Viewer> findAll = ds.find(Viewer.class, "watching", !watching);
         UpdateOperations<Viewer> updateOperation = ds.createUpdateOperations(Viewer.class).set("watching", watching);

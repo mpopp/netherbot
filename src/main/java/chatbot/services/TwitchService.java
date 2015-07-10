@@ -2,6 +2,7 @@ package chatbot.services;
 
 import chatbot.dto.twitch.Follower;
 import chatbot.dto.twitch.Followers;
+import chatbot.dto.twitch.Streams;
 import chatbot.repositories.api.TwitchRepository;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -27,6 +28,11 @@ public class TwitchService {
     public List<Follower> findFollowersForChannel(String channel){
         String responseString = twitchRepository.findFollowersForChannel(channel);
         return responseString == null ? null : Lists.newArrayList(transformToFollowers(responseString).getFollowers());
+    }
+
+    public boolean isLive(String channel){
+        Streams s = new Gson().fromJson(twitchRepository.findStream(channel), Streams.class);
+        return s.getTotal() == 1;
     }
 
     protected Followers transformToFollowers(String followersJsonString) {

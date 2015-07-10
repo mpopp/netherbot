@@ -3,7 +3,6 @@ package chatbot.services;
 import chatbot.dto.twitch.Follower;
 import chatbot.entities.Viewer;
 import chatbot.repositories.api.ViewerRepository;
-import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +54,7 @@ public class ViewerService {
     }
 
     public void setAllViewersToOffline() {
-        viewerRepo.updateWatchingStateForAllUsers(false);
+        viewerRepo.updateWatchingStateForAllViewers(false);
     }
 
     /**
@@ -96,8 +95,6 @@ public class ViewerService {
         }
         return viewerMap;
     }
-
-
 
     //endregion
 
