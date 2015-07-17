@@ -12,10 +12,10 @@ import java.util.Set;
 public class LevelCurveService {
 
     public long calculateLevel(Viewer v){
-        double levelPoints = 1.0;
+        double levelPoints = 500.0;
         long level = 1;
         while(v.wallet.totalPoints > levelPoints){
-            levelPoints *= 1.4;
+            levelPoints *= 1.2;
             level++;
             //System.out.println("Level " + level + " reached at " + levelPoints + " points. After" + (levelPoints / 2)/3600 + " seconds.");
         }
