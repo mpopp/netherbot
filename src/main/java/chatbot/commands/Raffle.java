@@ -6,10 +6,12 @@ import chatbot.entities.Viewer;
 import chatbot.services.RaffleService;
 import chatbot.services.UserRolesService;
 import chatbot.services.ViewerService;
+import com.google.common.collect.Sets;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -41,7 +43,8 @@ public class Raffle extends AbstractCommand {
 
     @Override
     protected boolean isCommandExecutionAllowed(MessageEvent event) {
-        return userRolesService.isUserOperatorInChannel(event.getUser(), event.getChannel());
+        HashSet<String> raffleUsers = Sets.newHashSet("gamingdaddies", "netherbrain");
+        return raffleUsers.contains(event.getUser().getNick().toLowerCase());
     }
 
     @Override

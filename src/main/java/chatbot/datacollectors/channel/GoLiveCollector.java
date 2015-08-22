@@ -3,6 +3,7 @@ package chatbot.datacollectors.channel;
 import chatbot.datacollectors.DataCollector;
 import chatbot.services.TwitchService;
 import chatbot.services.ViewerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,6 +16,7 @@ public class GoLiveCollector implements Runnable, DataCollector {
     private ViewerService viewerService;
     boolean wasLivePreviously;
 
+    @Autowired
     public GoLiveCollector(TwitchService twitchService, ViewerService viewerService) {
         this.twitchService = twitchService;
         this.viewerService = viewerService;
